@@ -44,9 +44,7 @@ public class UICanvas : MonoBehaviour {
 		GameObject skillDescriptionObject = new GameObject ("SkillDescription");
 		skillDescriptionObject.transform.SetParent (skillButtons [skillIndex].transform, false);
 		RectTransform skillDescriptionRectTransform = skillDescriptionObject.AddComponent<RectTransform> ();
-		GameObject skillDescriptionImageObject = new GameObject ("Image");
-		skillDescriptionImageObject.transform.SetParent (skillDescriptionObject.transform, false);
-		Image skillDeiscriptionImage = skillDescriptionImageObject.AddComponent<Image> ();
+		Image skillDeiscriptionImage = skillDescriptionObject.AddComponent<Image> ();
 		skillDeiscriptionImage.sprite = skillDescriptionSprite;
 		skillDeiscriptionImage.type = Image.Type.Sliced;
 		skillDeiscriptionImage.color = new Color (0f, 0f, 0f, 0.5f);
@@ -68,23 +66,29 @@ public class UICanvas : MonoBehaviour {
 
 		float localX = 0f;
 		float localY = 25 + skillDeiscriptionImage.rectTransform.sizeDelta.y * 0.5f;
-
-		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (imageRectTransform);
-
-		skillDescriptionRectTransform.anchoredPosition = new Vector2 (localX, localY) - areaOutOfCanvas;
+		Vector2 localPosition = new Vector2(localX, localY);
+		SetAnchoredPosition (skillDescriptionRectTransform, localPosition);
 	}
 
+	void SetAnchoredPosition (RectTransform rectTransform, Vector2 position)
+	{
+		rectTransform.anchoredPosition = position;
+
+		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (rectTransform);
+
+		rectTransform.anchoredPosition = position - areaOutOfCanvas;
+	}
 
 	Vector2 CalculateAreaOutOfCanvas(RectTransform rectTransform) {
 		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
-
-		float delta = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
-
-		Vector2 canvasMax = CalculateMax (canvasRectTransform, delta);
-		Vector2 rectMax = CalculateMax (rectTransform, delta);
+		Vector2 canvasMax = CalculateMax (canvasRectTransform);
+		Vector2 rectMax = CalculateMax (rectTransform);
 
 		float x = 0.0f;
 		float y = 0.0f;
+
+		Debug.Log (canvasMax);
+		Debug.Log (rectMax);
 
 		if (canvasMax.x < rectMax.x) {
 			float diffrence = rectMax.x - canvasMax.x;
@@ -94,14 +98,20 @@ public class UICanvas : MonoBehaviour {
 		if (canvasMax.y < rectMax.y) {
 			float diffrence = rectMax.y - canvasMax.y;
 			y = diffrence;
+			Debug.Log (diffrence);
 		}
 
 		return new Vector2 (x, y);
 	}
 
-	Vector2 CalculateMax (RectTransform rectTransform, float delta)
+	Vector2 CalculateMax (RectTransform rectTransform)
 	{
-		return new Vector2 (rectTransform.position.x / delta + rectTransform.sizeDelta.x * 0.5f, rectTransform.position.y / delta + rectTransform.sizeDelta.y * 0.5f);
+		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
+		float deltaX = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
+		float deltaY = canvasRectTransform.position.y / (canvasRectTransform.sizeDelta.y * 0.5f);
+
+		Debug.Log (rectTransform.position.y);
+		return new Vector2 (rectTransform.position.x / deltaX + rectTransform.sizeDelta.x * 0.5f, rectTransform.position.y / deltaY + rectTransform.sizeDelta.y * 0.5f);
 	}
 
 	public void UnshowSkillDescription(int skillIndex) {
@@ -147,10 +157,7 @@ public class UICanvas : MonoBehaviour {
 		contentRectTransform.sizeDelta = new Vector2 (0, contentHeight);
 
 		Vector2 position = new Vector2 (0, 180);
-		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (rectTransform);
-		rectTransform.anchoredPosition = new Vector2 (0, 180);
-
-		rectTransform.anchoredPosition = position - areaOutOfCanvas;
+		SetAnchoredPosition (rectTransform, position);
 
 		currentScrollView.transform.SetParent (transform);
 		currentScrollView.transform.SetSiblingIndex (0);
