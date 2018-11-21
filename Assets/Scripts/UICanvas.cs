@@ -64,24 +64,39 @@ public class UICanvas : MonoBehaviour {
 
 		skillDeiscriptionImage.rectTransform.sizeDelta = new Vector2 (skillDescriptionText.preferredWidth + 20, skillDescriptionText.preferredHeight - 10);
 
-		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
 		RectTransform imageRectTransform = skillDeiscriptionImage.rectTransform;
-
-		float delta = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
-
-		float canvasMaxX = CalculateMax (canvasRectTransform, delta).x;
-		float imageMaxX = CalculateMax (imageRectTransform, delta).x;
 
 		float localX = 0f;
 		float localY = 25 + skillDeiscriptionImage.rectTransform.sizeDelta.y * 0.5f;
 
-		if (canvasMaxX < imageMaxX) {
-			float diffrence = imageMaxX - canvasMaxX;
-			Debug.Log (diffrence);
-			localX = -diffrence;
+		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (imageRectTransform);
+
+		skillDescriptionRectTransform.anchoredPosition = new Vector2 (localX, localY) - areaOutOfCanvas;
+	}
+
+
+	Vector2 CalculateAreaOutOfCanvas(RectTransform rectTransform) {
+		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
+
+		float delta = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
+
+		Vector2 canvasMax = CalculateMax (canvasRectTransform, delta);
+		Vector2 rectMax = CalculateMax (rectTransform, delta);
+
+		float x = 0.0f;
+		float y = 0.0f;
+
+		if (canvasMax.x < rectMax.x) {
+			float diffrence = rectMax.x - canvasMax.x;
+			x = diffrence;
 		}
 
-		skillDescriptionRectTransform.anchoredPosition = new Vector2 (localX, localY);
+		if (canvasMax.y < rectMax.y) {
+			float diffrence = rectMax.y - canvasMax.y;
+			y = diffrence;
+		}
+
+		return new Vector2 (x, y);
 	}
 
 	Vector2 CalculateMax (RectTransform rectTransform, float delta)
@@ -125,14 +140,20 @@ public class UICanvas : MonoBehaviour {
 		Destroy (currentScrollView);
 		currentScrollView = Instantiate (obtainedSkillScrollView, skillButtons[atCanUseSkillIndex].transform);
 		RectTransform rectTransform = currentScrollView.GetComponent<RectTransform> ();
-		rectTransform.localPosition = new Vector2 (0, 180);
-		currentScrollView.transform.SetParent (transform);
-		currentScrollView.transform.SetSiblingIndex (0);
 
 		int contentHeight = 55 * obtainedSkills.Count;
 		Transform contentTransform = currentScrollView.transform.Find ("Viewport").Find ("Content");
 		RectTransform contentRectTransform = contentTransform.GetComponent<RectTransform> ();
 		contentRectTransform.sizeDelta = new Vector2 (0, contentHeight);
+
+		Vector2 position = new Vector2 (0, 180);
+		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (rectTransform);
+		rectTransform.anchoredPosition = new Vector2 (0, 180);
+
+		rectTransform.anchoredPosition = position - areaOutOfCanvas;
+
+		currentScrollView.transform.SetParent (transform);
+		currentScrollView.transform.SetSiblingIndex (0);
 
 		EventTrigger unshowTrigger = currentScrollView.AddComponent<EventTrigger> ();
 		EventTrigger.Entry unshowTriggerEntry = new EventTrigger.Entry ();
