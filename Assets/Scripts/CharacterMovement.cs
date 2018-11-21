@@ -114,10 +114,12 @@ public class CharacterMovement : MonoBehaviour {
 
 		if (isActive) {
 			if (canAttack) {
-				if (isPreAttackDone) {
-					if (IsAttackTargetInRange ()) {
+				if (IsAttackTargetInRange ()) {
+					if (isPreAttackDone) {
 						StartNewAttack ();
-					} 
+					} else {
+						WaitPreAttack ();
+					}
 				} else {
 				}
 			}
@@ -231,6 +233,11 @@ public class CharacterMovement : MonoBehaviour {
 		if (canHitTarget) {
 			AttackDone ();
 		}
+	}
+
+	void WaitPreAttack ()
+	{
+		canMove = false;
 	}
 
 	void HitTarget ()
