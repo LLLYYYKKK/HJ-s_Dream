@@ -12,7 +12,7 @@ public class HitObject : MonoBehaviour {
 
 	Rigidbody2D rbody2D;
 
-	List<GameObject> attackTargetsBeHit;
+	protected List<GameObject> attackTargetsBeHit;
 
 	[System.NonSerialized] public string attackTargetTag;
 	[System.NonSerialized] public float damage;
@@ -32,7 +32,7 @@ public class HitObject : MonoBehaviour {
 	}
 
 	// Update is called once per frame
-	void Update () {
+	protected virtual void Update () {
 		timer += Time.deltaTime;
 
 		if (timer >= liveTime) {
@@ -65,15 +65,14 @@ public class HitObject : MonoBehaviour {
 		transform.rotation = Quaternion.AngleAxis (angle, Vector3.forward);
 	}
 
-	void CheckHit (GameObject target)
+	protected virtual void CheckHit (GameObject target)
 	{
 		if (!attackTargetsBeHit.Contains(target)) {
 			if (attackTargetsBeHit.Count != maximumTargetCount) {
 				attackTargetsBeHit.Add (target);
 				CharacterMovement targetCharacterMovement = target.GetComponent<CharacterMovement> ();
 				// attacker.attackTarget = target;
-				targetCharacterMovement.Hit (damage, attacker);
-				CreateHitEffect ();
+				HitAction(targetCharacterMovement);
 
 				if (isSetAttackTargetIfNotExist) {
 					if (attacker.attackTarget == null) {
@@ -97,7 +96,7 @@ public class HitObject : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerEnter2D (Collider2D other) {
+	protected void OnTriggerEnter2D (Collider2D other) {
 		if (other.tag == attackTargetTag) {
 			if (isItTargeting) {
 				if (other.gameObject == attackTarget.gameObject) {
@@ -109,7 +108,9 @@ public class HitObject : MonoBehaviour {
 		}
 	}
 
-	void HitAction ()
+	protected virtual void HitAction (CharacterMovement targetCharacterMovement)
 	{
+		targetCharacterMovement.Hit (damage, attacker);
+		CreateHitEffect ();
 	}
 }
