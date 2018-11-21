@@ -36,8 +36,9 @@ public class SkillFuckYou : Skill {
 	public override void SkillAction ()
 	{
 		base.SkillAction ();
-		instantiatedHitObject = Instantiate (hitObject, caster.hitObjectSpawnPoint);
 		hitObjectSpawnPosition = caster.hitObjectSpawnPoint.transform.position;
+		instantiatedHitObject = Instantiate (hitObject);
+		instantiatedHitObject.transform.position = hitObjectSpawnPosition;
 		HitObject hitObjectScript = instantiatedHitObject.GetComponent<HitObject> ();
 		hitObjectScript.Hit (caster, destination, targetTag);
 		hitObjectScript.damage = CalculateDamage (caster);

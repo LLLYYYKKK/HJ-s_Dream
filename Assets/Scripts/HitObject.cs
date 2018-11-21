@@ -10,7 +10,7 @@ public class HitObject : MonoBehaviour {
 	public int maximumTargetCount;
 	public GameObject hitEffect;
 
-	Rigidbody2D rbody2D;
+	protected Rigidbody2D rbody2D;
 
 	protected List<GameObject> attackTargetsBeHit;
 
@@ -50,11 +50,12 @@ public class HitObject : MonoBehaviour {
 		}
 	}
 
-	void FixedUpdate() {
+	protected virtual void FixedUpdate() {
+		Debug.Log (transform.right);
 		rbody2D.velocity = speed * transform.right;
 	}
 		
-	public void Hit(CharacterMovement attacker, Vector2 destination, string attackTargetTag) {
+	public virtual void Hit(CharacterMovement attacker, Vector2 destination, string attackTargetTag) {
 		this.attacker = attacker;
 		this.attackTargetTag = attackTargetTag;
 		if (attacker.attackTarget != null) {
