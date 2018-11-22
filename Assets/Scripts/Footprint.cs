@@ -9,7 +9,7 @@ public class Footprint : MonoBehaviour {
 
 	void Awake() {
 		timer = 0.0f;
-		spriteRenderer = GetComponent<SpriteRenderer> ();
+		spriteRenderer = GetComponentInChildren<SpriteRenderer> ();
 	}
 
 	void Update() {

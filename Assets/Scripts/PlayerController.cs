@@ -12,9 +12,6 @@ public class PlayerController : MonoBehaviour {
 	SkillManager skillManager;
 	Transform center;
 
-	CursorMode cursorMode;
-	Vector2 cursurHotspot;
-
 	int cursorCount;
 
 	[System.NonSerialized] public int controlState;
@@ -30,8 +27,6 @@ public class PlayerController : MonoBehaviour {
 		characterMovement.canAttack = false;
 		controlState = IDLE_STATE;
 
-		cursorMode = CursorMode.Auto;
-		cursurHotspot = Vector2.zero;
 		cursorCount = 0;
 
 		StartCoroutine (ChangeCursor ());
@@ -188,7 +183,7 @@ public class PlayerController : MonoBehaviour {
 			switch (controlState) {
 			case IDLE_STATE:
 				if (cursorCount < idleCursor.Length) {
-					Cursor.SetCursor (idleCursor [cursorCount], cursurHotspot, cursorMode);
+					Cursor.SetCursor (idleCursor [cursorCount], new Vector2(10, 10), CursorMode.Auto);
 				} else {
 					cursorCount = 0;
 				}
