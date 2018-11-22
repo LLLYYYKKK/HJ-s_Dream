@@ -51,7 +51,6 @@ public class HitObject : MonoBehaviour {
 	}
 
 	protected virtual void FixedUpdate() {
-		Debug.Log (transform.right);
 		rbody2D.velocity = speed * transform.right;
 	}
 		
