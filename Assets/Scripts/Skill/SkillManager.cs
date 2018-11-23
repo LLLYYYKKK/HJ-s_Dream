@@ -63,6 +63,7 @@ public class SkillManager : MonoBehaviour {
 			Skill selectedSkill = canUseSkills [skillIndex].GetComponent<Skill> ();
 			if (selectedSkill.skillCoolTimer != 0.0f) {
 				audioSource.PlayOneShot (skillCoolTimeSound);
+				playerMovement.canAttack = true;
 				return;
 			}
 
