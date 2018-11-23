@@ -7,7 +7,7 @@ public class EnemyMovement: CharacterMovement {
 
 	protected override void Update() {
 		base.Update ();
-		if (attackTarget == null) {
+		if (attackTarget == null && isActive) {
 			FindPlayer ();
 		}
 
