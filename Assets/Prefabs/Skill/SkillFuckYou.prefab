@@ -134,21 +134,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   skillLevel: 1
   skillCastTime: 0.3
-  skillActionTime: 0.3
+  skillActionTime: 0.2
   skillBasicDamageByLevel:
+  - 1
+  - 1.5
   - 2
-  - 4
-  - 6
-  - 8
-  - 10
-  skillDamageCoefficient: 0.6
+  - 3
+  - 5
+  skillDamageCoefficient: 0.2
   skillCoolTimeByLevel:
   - 3
   - 2.8
   - 2.6
   - 2.4
   - 2
-  skillRange: 8
+  skillRange: 5
   skillIcon: {fileID: 21300000, guid: 0affa43df6185b14bac55ffe5a845baf, type: 3}
   targetTag: Enemy
   skillAnimationTrigger: FuckYou
