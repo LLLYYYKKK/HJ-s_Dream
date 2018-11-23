@@ -51,6 +51,9 @@ TagManager:
   - name: Item
     uniqueID: 3521774885
     locked: 0
+  - name: Shadow
+    uniqueID: 3468477061
+    locked: 0
   - name: Skill
     uniqueID: 526112679
     locked: 0
