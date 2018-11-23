@@ -87,7 +87,7 @@ public class HitObject : MonoBehaviour {
 		}
 	}
 
-	void CreateHitEffect ()
+	protected void CreateHitEffect ()
 	{
 		if (hitEffect != null) {
 			GameObject InstantiatedhitEffect = Instantiate (hitEffect);
