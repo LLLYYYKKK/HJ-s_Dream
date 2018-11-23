@@ -272,7 +272,7 @@ public class UICanvas : MonoBehaviour {
 
 			int obtainedSkillIndex = index;
 			SkillManager skillManager = player.GetComponent<SkillManager> ();
-			obtainedSkillButton.onClick.AddListener(() => skillManager.SetCanUseSkill(atCanUseSkillIndex, obtainedSkillIndex));
+			obtainedSkillButton.onClick.AddListener(() => skillManager.SetCanUseSkill(atCanUseSkillIndex, obtainedSkillIndex, true));
 
 			index++;
 		}

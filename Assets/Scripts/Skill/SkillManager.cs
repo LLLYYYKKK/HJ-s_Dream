@@ -20,6 +20,8 @@ public class SkillManager : MonoBehaviour {
 
 	public AudioClip skillCoolTimeSound;
 
+	public AudioClip setSkillSound;
+
 	public AudioClip obtainSkillSound;
 
 	void Awake () {
@@ -139,6 +141,13 @@ public class SkillManager : MonoBehaviour {
 
 		canUseSkills [skillIndex] = obtainedSkills [obtainedSkillIndex];
 		uiCanvas.SetCanUseSkill (skillIndex, canUseSkills [skillIndex].GetComponent<Skill> ());
+	}
+
+	public void SetCanUseSkill(int skillIndex, int obtainedSkillIndex, bool withSound) {
+		SetCanUseSkill (skillIndex, obtainedSkillIndex);
+		if (withSound) {
+			audioSource.PlayOneShot (setSkillSound);
+		}
 	}
 
 	public void SetCanUseSkillNull(int skillIndex) {
