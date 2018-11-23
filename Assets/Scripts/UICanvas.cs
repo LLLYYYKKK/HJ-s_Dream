@@ -8,11 +8,14 @@ public class UICanvas : MonoBehaviour {
 	public Sprite skillDescriptionSprite;
 	public GameObject obtainedSkillScrollView;
 	public Sprite defaultSkillButtonSprite;
+	public GameObject characterHpBar;
 
 	GameObject player;
 	Transform skillUI;
 	Transform hpUI;
 	Button[] skillButtons;
+	Dictionary<CharacterMovement, GameObject> characterHpBarDictionary;
+	Dictionary<CharacterMovement, float> characterHpBarTimerDictionary;
 
 	GameObject currentScrollView;
 
@@ -23,14 +26,77 @@ public class UICanvas : MonoBehaviour {
 		hpUI = statusUI.Find ("HpUI");
 		skillButtons = skillUI.GetComponentsInChildren<Button> ();
 		ShowPlayerHp ();
+		characterHpBarDictionary = new Dictionary<CharacterMovement, GameObject> ();
+		characterHpBarTimerDictionary = new Dictionary<CharacterMovement, float> ();
+	}
+
+	void Update() {
+		UpdateCharacterHpBar ();
+	}
+
+	void UpdateCharacterHpBar ()
+	{
+		foreach (var keyValuePair in characterHpBarDictionary) {
+			GameObject hpBarObject = keyValuePair.Value;
+			CharacterMovement target = keyValuePair.Key;
+			Slider slider = hpBarObject.GetComponent<Slider> ();
+
+			hpBarObject.transform.position = CalculateHpBarPosition (target);
+			slider.value = target.hp / target.maxHp;
+
+			characterHpBarTimerDictionary [keyValuePair.Key] += Time.deltaTime;
+		}
+
+		foreach (var keyValuePair in characterHpBarTimerDictionary) {
+			if (keyValuePair.Value >= 3f) {
+				RemoveCharacterHpBar (keyValuePair.Key);
+				return;
+			}
+		}
 	}
 
 	public void Hit(CharacterMovement target, float damage) {
 		ShowDamage (target.gameObject, damage);
 
+		if (!characterHpBarDictionary.ContainsKey (target)) {
+			CreateCharacterHpBar (target);
+		}
+		else {
+			characterHpBarTimerDictionary [target] = 0f;
+		}
+
 		if (target.tag == "Player") {
 			ShowPlayerHp ();
 		}
+	}
+
+	void CreateCharacterHpBar (CharacterMovement target)
+	{
+		GameObject instantiatedHpBar = Instantiate (characterHpBar, transform);
+		characterHpBarDictionary.Add (target, instantiatedHpBar);
+		characterHpBarTimerDictionary.Add (target, 0.0f);
+		instantiatedHpBar.transform.position = CalculateHpBarPosition (target);
+		if (target.tag == "Enemy") {
+			Transform fillArea = instantiatedHpBar.transform.Find ("Fill Area");
+			fillArea.GetComponentInChildren<Image> ().color = new Color (1f, 0f, 0f);
+		}
+	}
+
+	public void Dead (CharacterMovement characterMovement)
+	{
+		RemoveCharacterHpBar (characterMovement);
+	}
+
+	void RemoveCharacterHpBar (CharacterMovement target)
+	{
+		Destroy (characterHpBarDictionary [target]);
+		characterHpBarDictionary.Remove (target);
+		characterHpBarTimerDictionary.Remove (target);
+	}
+
+	Vector3 CalculateHpBarPosition (CharacterMovement target)
+	{
+		return Camera.main.WorldToScreenPoint (target.transform.position - new Vector3(0, 0.2f, 0));
 	}
 
 	void ShowDamage(GameObject target, float damage) {
