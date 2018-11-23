@@ -9,6 +9,7 @@ public class UICanvas : MonoBehaviour {
 	public GameObject obtainedSkillScrollView;
 	public Sprite defaultSkillButtonSprite;
 	public GameObject characterHpBar;
+	public AudioClip clickSound;
 	public AudioClip enterSound;
 	public AudioClip closeSound;
 
@@ -35,9 +36,11 @@ public class UICanvas : MonoBehaviour {
 		foreach (var button in skillButtons) {
 			int buttonIndex = i;
 			button.onClick.AddListener (() => {
-				audioSource.PlayOneShot (enterSound);
+				audioSource.PlayOneShot (clickSound);
 				UnshowSkillDescription(buttonIndex);
 			});
+			GameObject skillInput = new GameObject ("Input");
+			skillInput.transform.SetParent (button.transform);
 			i++;
 		}
 		ShowPlayerHp ();
