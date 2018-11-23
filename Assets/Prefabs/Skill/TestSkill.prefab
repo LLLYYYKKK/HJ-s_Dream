@@ -159,7 +159,7 @@ MonoBehaviour:
   isItTargeting: 0
   isSetAttackTargetIfNotExist: 1
   maximumTargetCount: -1
-  hitEffect: {fileID: 0}
+  hitEffect: {fileID: 1196670630750820, guid: f2e6f0f608a8ed34c9facf00c6c903fa, type: 2}
 --- !u!212 &212178810734649862
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -192,7 +192,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 526112679
-  m_SortingLayer: 3
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 3558c13f67a5ee24fa815bae32d73b35, type: 3}
   m_Color: {r: 0.97794116, g: 0.74585366, b: 0.13662414, a: 0.59}
