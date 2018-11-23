@@ -26,6 +26,7 @@ public class FuckYouHitObject : HitObject {
 	protected override void HitAction (CharacterMovement targetCharacterMovement)
 	{
 		StartCoroutine (MultipleHit (targetCharacterMovement));
+		CreateHitEffect ();
 	}
 
 	void OnTriggerStay2D(Collider2D other) {

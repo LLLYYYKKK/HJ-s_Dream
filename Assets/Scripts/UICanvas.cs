@@ -9,6 +9,10 @@ public class UICanvas : MonoBehaviour {
 	public GameObject obtainedSkillScrollView;
 	public Sprite defaultSkillButtonSprite;
 	public GameObject characterHpBar;
+	public AudioClip enterSound;
+	public AudioClip closeSound;
+
+	AudioSource audioSource;
 
 	GameObject player;
 	Transform skillUI;
@@ -20,11 +24,22 @@ public class UICanvas : MonoBehaviour {
 	GameObject currentScrollView;
 
 	void Awake() {
+		audioSource = GetComponent<AudioSource> ();
+
 		player = GameObject.FindGameObjectWithTag ("Player");
 		Transform statusUI = transform.Find ("StatusUI");
 		skillUI = statusUI.Find ("SkillUI");
 		hpUI = statusUI.Find ("HpUI");
 		skillButtons = skillUI.GetComponentsInChildren<Button> ();
+		int i = 0;
+		foreach (var button in skillButtons) {
+			int buttonIndex = i;
+			button.onClick.AddListener (() => {
+				audioSource.PlayOneShot (enterSound);
+				UnshowSkillDescription(buttonIndex);
+			});
+			i++;
+		}
 		ShowPlayerHp ();
 		characterHpBarDictionary = new Dictionary<CharacterMovement, GameObject> ();
 		characterHpBarTimerDictionary = new Dictionary<CharacterMovement, float> ();
@@ -180,7 +195,10 @@ public class UICanvas : MonoBehaviour {
 	}
 
 	public void UnshowSkillDescription(int skillIndex) {
-		Destroy (skillButtons [skillIndex].transform.Find ("SkillDescription").gameObject);
+		Transform skillDescriptionTranform = skillButtons [skillIndex].transform.Find ("SkillDescription");
+		if (skillDescriptionTranform != null) {
+			Destroy (skillDescriptionTranform.gameObject);
+		}
 	}
 
 	void ShowPlayerHp ()
@@ -231,6 +249,7 @@ public class UICanvas : MonoBehaviour {
 		EventTrigger.Entry unshowTriggerEntry = new EventTrigger.Entry ();
 		unshowTriggerEntry.eventID = EventTriggerType.PointerExit;
 		unshowTriggerEntry.callback.AddListener ((data) => {
+			audioSource.PlayOneShot(closeSound);
 			Destroy(currentScrollView);
 		});
 		unshowTrigger.triggers.Add (unshowTriggerEntry);
@@ -272,7 +291,12 @@ public class UICanvas : MonoBehaviour {
 
 			int obtainedSkillIndex = index;
 			SkillManager skillManager = player.GetComponent<SkillManager> ();
-			obtainedSkillButton.onClick.AddListener(() => skillManager.SetCanUseSkill(atCanUseSkillIndex, obtainedSkillIndex));
+			obtainedSkillButton.onClick.AddListener(() => {
+				skillManager.SetCanUseSkill(atCanUseSkillIndex, obtainedSkillIndex);
+				audioSource.PlayOneShot(enterSound);
+				Destroy(currentScrollView);
+				UnshowSkillDescription(atCanUseSkillIndex);
+			});
 
 			index++;
 		}
