@@ -39,10 +39,8 @@ public class UICanvas : MonoBehaviour {
 		foreach (var keyValuePair in characterHpBarDictionary) {
 			GameObject hpBarObject = keyValuePair.Value;
 			CharacterMovement target = keyValuePair.Key;
-			Slider slider = hpBarObject.GetComponent<Slider> ();
 
 			hpBarObject.transform.position = CalculateHpBarPosition (target);
-			slider.value = target.hp / target.maxHp;
 
 			characterHpBarTimerDictionary [keyValuePair.Key] += Time.deltaTime;
 		}
@@ -63,6 +61,8 @@ public class UICanvas : MonoBehaviour {
 		}
 		else {
 			characterHpBarTimerDictionary [target] = 0f;
+			Slider slider = characterHpBarDictionary[target].GetComponent<Slider> ();
+			slider.value = target.hp / target.maxHp;
 		}
 
 		if (target.tag == "Player") {
@@ -80,6 +80,8 @@ public class UICanvas : MonoBehaviour {
 			Transform fillArea = instantiatedHpBar.transform.Find ("Fill Area");
 			fillArea.GetComponentInChildren<Image> ().color = new Color (1f, 0f, 0f);
 		}
+		Slider slider = instantiatedHpBar.GetComponent<Slider> ();
+		slider.value = target.hp / target.maxHp;
 	}
 
 	public void Dead (CharacterMovement characterMovement)
@@ -89,9 +91,11 @@ public class UICanvas : MonoBehaviour {
 
 	void RemoveCharacterHpBar (CharacterMovement target)
 	{
-		Destroy (characterHpBarDictionary [target]);
-		characterHpBarDictionary.Remove (target);
-		characterHpBarTimerDictionary.Remove (target);
+		if (characterHpBarDictionary.ContainsKey (target)) {
+			Destroy (characterHpBarDictionary [target]);
+			characterHpBarDictionary.Remove (target);
+			characterHpBarTimerDictionary.Remove (target);
+		}
 	}
 
 	Vector3 CalculateHpBarPosition (CharacterMovement target)
