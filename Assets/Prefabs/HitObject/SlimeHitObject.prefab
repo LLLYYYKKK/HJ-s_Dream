@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 114338829484368334}
   - component: {fileID: 58000860965147846}
   m_Layer: 0
-  m_Name: CircleHitObject
+  m_Name: SlimeHitObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -91,4 +91,6 @@ MonoBehaviour:
   liveTime: 0.4
   speed: 0
   isItTargeting: 0
+  isSetAttackTargetIfNotExist: 1
   maximumTargetCount: 1
+  hitEffect: {fileID: 0}
