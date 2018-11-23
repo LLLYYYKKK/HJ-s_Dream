@@ -87,9 +87,6 @@ public class UICanvas : MonoBehaviour {
 		float x = 0.0f;
 		float y = 0.0f;
 
-		Debug.Log (canvasMax);
-		Debug.Log (rectMax);
-
 		if (canvasMax.x < rectMax.x) {
 			float diffrence = rectMax.x - canvasMax.x;
 			x = diffrence;
@@ -98,7 +95,6 @@ public class UICanvas : MonoBehaviour {
 		if (canvasMax.y < rectMax.y) {
 			float diffrence = rectMax.y - canvasMax.y;
 			y = diffrence;
-			Debug.Log (diffrence);
 		}
 
 		return new Vector2 (x, y);
@@ -110,7 +106,6 @@ public class UICanvas : MonoBehaviour {
 		float deltaX = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
 		float deltaY = canvasRectTransform.position.y / (canvasRectTransform.sizeDelta.y * 0.5f);
 
-		Debug.Log (rectTransform.position.y);
 		return new Vector2 (rectTransform.position.x / deltaX + rectTransform.sizeDelta.x * 0.5f, rectTransform.position.y / deltaY + rectTransform.sizeDelta.y * 0.5f);
 	}
 
