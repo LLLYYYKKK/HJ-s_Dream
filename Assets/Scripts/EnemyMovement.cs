@@ -10,6 +10,10 @@ public class EnemyMovement: CharacterMovement {
 		if (attackTarget == null) {
 			FindPlayer ();
 		}
+
+		if (IsHighlighted ()) {
+			Highlight ();
+		}
 	}
 
 	public override void SetDirectionTo(Vector2 destination) {
@@ -29,5 +33,22 @@ public class EnemyMovement: CharacterMovement {
 	{
 		base.Hit (damage, attacker);
 		attackTarget = attacker.gameObject;
+	}
+
+	bool IsHighlighted ()
+	{
+		Vector2 mousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+		RaycastHit2D hit = Physics2D.Raycast (mousePosition, Vector2.zero);
+
+		if (hit.collider != null) {
+			if (hit.collider.gameObject == gameObject) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void Highlight ()
+	{
 	}
 }
