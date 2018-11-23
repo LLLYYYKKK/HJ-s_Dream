@@ -108,7 +108,7 @@ public class Skill : MonoBehaviour {
 	}
 
 	protected string GetSkillDescriptionTitle(CharacterMovement caster) {
-		return "<color=#ffffff><size=15><b>" + skillName + "</b></size>\t\t" + "<size=12>쿨타임 : <b>" + CalculateCoolTime(caster).ToString() + "초</b></size></color>\n\n";
+		return "<color=#ffffff><size=15><b>" + skillName + "</b></size> Lv." + skillLevel.ToString() + "\t\t" + "<size=12>쿨타임 : <b>" + CalculateCoolTime(caster).ToString() + "초</b></size></color>\n\n";
 	}
 
 	float CalculateCoolTime (CharacterMovement caster)
