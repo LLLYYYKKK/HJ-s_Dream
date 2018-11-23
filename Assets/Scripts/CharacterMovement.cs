@@ -326,6 +326,7 @@ public class CharacterMovement : MonoBehaviour {
 
 			deadTimer += Time.deltaTime;
 			if (deadTimer >= deadTime) {
+				uiCanvas.Dead (this);
 				Destroy (gameObject);
 			}
 		}

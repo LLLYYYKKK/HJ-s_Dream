@@ -276,7 +276,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 0.89
-  attackRange: 1.5
+  attackRange: 1.2
   attackTime: 2
   skillCoolTimeReductionRate: 0
   name: "\uC2AC\uB77C\uC784"
@@ -325,7 +325,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 2018453767
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: d131b28d322b4024bb3884abc158de2f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

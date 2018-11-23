@@ -1901,6 +1901,8 @@ MonoBehaviour:
     type: 2}
   defaultSkillButtonSprite: {fileID: 21300000, guid: ade0e2327d7f44342b89d90c7de4e527,
     type: 3}
+  characterHpBar: {fileID: 1703701138243566, guid: 596d192074ebd5a4a8aa7e12e5543bf6,
+    type: 2}
 --- !u!1 &1433456376
 GameObject:
   m_ObjectHideFlags: 0
@@ -2043,23 +2045,6 @@ Prefab:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4734235717440554, guid: 9f4f7375369624f4a9e60a1cc20f39f8, type: 2}
-      propertyPath: m_RootOrder
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 212916588281710598, guid: 9f4f7375369624f4a9e60a1cc20f39f8,
-        type: 2}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
-    - target: {fileID: 4672660781353014, guid: 9f4f7375369624f4a9e60a1cc20f39f8, type: 2}
-      propertyPath: m_RootOrder
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4813786109915708, guid: 9f4f7375369624f4a9e60a1cc20f39f8, type: 2}
-      propertyPath: m_RootOrder
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4047164105571882, guid: 9f4f7375369624f4a9e60a1cc20f39f8, type: 2}
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
@@ -2449,6 +2434,11 @@ Prefab:
     - target: {fileID: 224251269727943728, guid: 856781caa56f9fc4789746a239b633d4,
         type: 2}
       propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114574092290232648, guid: 856781caa56f9fc4789746a239b633d4,
+        type: 2}
+      propertyPath: m_Value
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
