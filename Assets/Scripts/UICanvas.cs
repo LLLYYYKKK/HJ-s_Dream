@@ -124,7 +124,7 @@ public class UICanvas : MonoBehaviour {
 		PlayerMovement playerMovement = player.GetComponent<PlayerMovement> ();
 		hpSlider.value = playerMovement.hp / playerMovement.maxHp;
 		hpSlider.fillRect.GetComponent<Image> ().color = new Color (1f, hpSlider.value, hpSlider.value);
-		hpUI.GetComponentInChildren<Text> ().text = Mathf.CeilToInt (playerMovement.hp).ToString();
+		hpSlider.GetComponentInChildren<Text> ().text = Mathf.CeilToInt (playerMovement.hp).ToString();
 	}
 
 	public void SetCanUseSkill (int skillIndex, Skill skill)
