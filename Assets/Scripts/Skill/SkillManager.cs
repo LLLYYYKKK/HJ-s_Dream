@@ -58,14 +58,14 @@ public class SkillManager : MonoBehaviour {
 					return;
 				}
 			}
-				
-			playerController.controlState = PlayerController.ATTACK_STATE;
+
 			Skill selectedSkill = canUseSkills [skillIndex].GetComponent<Skill> ();
 			if (selectedSkill.skillCoolTimer != 0.0f) {
 				audioSource.PlayOneShot (skillCoolTimeSound);
-				playerMovement.canAttack = true;
 				return;
 			}
+				
+			playerController.controlState = PlayerController.ATTACK_STATE;
 
 			currentSkill = selectedSkill;
 			currentSkill.UseSkill (playerMovement, mousePosition);
