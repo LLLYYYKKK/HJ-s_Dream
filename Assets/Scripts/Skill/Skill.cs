@@ -34,16 +34,24 @@ public class Skill : MonoBehaviour {
 	[System.NonSerialized] public float skillCoolTimer;
 
 	[System.NonSerialized] public bool isSkillActivate;
+	[System.NonSerialized] public bool canSkillAction;
 	[System.NonSerialized] public static string SKILL_NAME_COLOR = "white";
 	[System.NonSerialized] public static string DESCRIPTION_COLOR = "lightblue";
 	[System.NonSerialized] public static string DAMAGE_COEFFICIENT_COLOR = "lime";
 
 	float skillCastTimer;
 
+	public virtual void Awake() {skillCoolTimer = 0.0f;
+		skillCastTimer = 0.0f;
+		isSkillActivate = false;
+		audioSource = GetComponent<AudioSource> ();
+		canSkillAction = false;
+	}
+
 	public virtual void Update() {
 		if (isSkillActivate) {
 			skillCastTimer += Time.deltaTime;
-			if (skillCastTimer >= skillActionTime) {
+			if (skillCastTimer >= skillActionTime && canSkillAction) {
 				SkillAction ();
 			}
 
@@ -60,16 +68,10 @@ public class Skill : MonoBehaviour {
 		}
 	}
 
-	public virtual void Awake() {
-		skillCoolTimer = 0.0f;
-		skillCastTimer = 0.0f;
-		isSkillActivate = false;
-		audioSource = GetComponent<AudioSource> ();
-	}
-
 	public virtual void UseSkill (CharacterMovement caster, Vector2 mousePosition)
 	{
 		isSkillActivate = true;
+		canSkillAction = true;
 		this.caster = caster;
 		caster.CancleAttack ();
 		caster.AttackDone ();
@@ -81,6 +83,7 @@ public class Skill : MonoBehaviour {
 
 	public virtual void SkillAction () {
 		audioSource.PlayOneShot (skillSound);
+		canSkillAction = false;
 	}
 
 	public virtual void EndSkill () {

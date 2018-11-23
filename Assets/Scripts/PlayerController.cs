@@ -4,11 +4,15 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 	public float findEnemyRange = 10.0f;
+	public Texture2D[] idleCursor;
+	public GameObject footprint;
 
 	CharacterMovement characterMovement;
 	GameObject attackRangeShower;
 	SkillManager skillManager;
 	Transform center;
+
+	int cursorCount;
 
 	[System.NonSerialized] public int controlState;
 	public const int IDLE_STATE = 0;
@@ -22,6 +26,10 @@ public class PlayerController : MonoBehaviour {
 		attackRangeShower = center.GetChild(0).gameObject;
 		characterMovement.canAttack = false;
 		controlState = IDLE_STATE;
+
+		cursorCount = 0;
+
+		StartCoroutine (ChangeCursor ());
 	}
 	
 	// Update is called once per frame
@@ -74,6 +82,7 @@ public class PlayerController : MonoBehaviour {
 			characterMovement.attackTarget = null;
 			characterMovement.isAlwaysTracingTarget = false;
 			break;
+
 		case WAIT_ATTACK_STATE:
 			attackRangeShower.SetActive (true);
 			attackRangeShower.transform.localScale = new Vector3 (characterMovement.attackRange, characterMovement.attackRange);
@@ -107,6 +116,13 @@ public class PlayerController : MonoBehaviour {
 	{
 		Vector2 mousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 		characterMovement.SetDirectionTo(mousePosition);
+
+		switch (controlState) {
+		case IDLE_STATE:
+			cursorCount = 0;
+			Instantiate (footprint, mousePosition, Quaternion.identity);
+			break;
+		}
 	}
 
 	GameObject CheckEnemyClicked() {
@@ -159,5 +175,23 @@ public class PlayerController : MonoBehaviour {
 		controlState = ATTACK_STATE;
 		characterMovement.canAttack = true;
 		characterMovement.attackTarget = clickedEnemy;
+	}
+
+	IEnumerator ChangeCursor ()
+	{
+		while(true) {
+			switch (controlState) {
+			case IDLE_STATE:
+				if (cursorCount < idleCursor.Length) {
+					Cursor.SetCursor (idleCursor [cursorCount], new Vector2(10, 10), CursorMode.Auto);
+				} else {
+					cursorCount = 0;
+				}
+				cursorCount++;
+				break;
+			}
+
+			yield return new WaitForSeconds (0.1f);
+		}
 	}
 }

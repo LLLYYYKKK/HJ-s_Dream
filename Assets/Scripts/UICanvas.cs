@@ -8,11 +8,14 @@ public class UICanvas : MonoBehaviour {
 	public Sprite skillDescriptionSprite;
 	public GameObject obtainedSkillScrollView;
 	public Sprite defaultSkillButtonSprite;
+	public GameObject characterHpBar;
 
 	GameObject player;
 	Transform skillUI;
 	Transform hpUI;
 	Button[] skillButtons;
+	Dictionary<CharacterMovement, GameObject> characterHpBarDictionary;
+	Dictionary<CharacterMovement, float> characterHpBarTimerDictionary;
 
 	GameObject currentScrollView;
 
@@ -23,14 +26,77 @@ public class UICanvas : MonoBehaviour {
 		hpUI = statusUI.Find ("HpUI");
 		skillButtons = skillUI.GetComponentsInChildren<Button> ();
 		ShowPlayerHp ();
+		characterHpBarDictionary = new Dictionary<CharacterMovement, GameObject> ();
+		characterHpBarTimerDictionary = new Dictionary<CharacterMovement, float> ();
+	}
+
+	void Update() {
+		UpdateCharacterHpBar ();
+	}
+
+	void UpdateCharacterHpBar ()
+	{
+		foreach (var keyValuePair in characterHpBarDictionary) {
+			GameObject hpBarObject = keyValuePair.Value;
+			CharacterMovement target = keyValuePair.Key;
+			Slider slider = hpBarObject.GetComponent<Slider> ();
+
+			hpBarObject.transform.position = CalculateHpBarPosition (target);
+			slider.value = target.hp / target.maxHp;
+
+			characterHpBarTimerDictionary [keyValuePair.Key] += Time.deltaTime;
+		}
+
+		foreach (var keyValuePair in characterHpBarTimerDictionary) {
+			if (keyValuePair.Value >= 3f) {
+				RemoveCharacterHpBar (keyValuePair.Key);
+				return;
+			}
+		}
 	}
 
 	public void Hit(CharacterMovement target, float damage) {
 		ShowDamage (target.gameObject, damage);
 
+		if (!characterHpBarDictionary.ContainsKey (target)) {
+			CreateCharacterHpBar (target);
+		}
+		else {
+			characterHpBarTimerDictionary [target] = 0f;
+		}
+
 		if (target.tag == "Player") {
 			ShowPlayerHp ();
 		}
+	}
+
+	void CreateCharacterHpBar (CharacterMovement target)
+	{
+		GameObject instantiatedHpBar = Instantiate (characterHpBar, transform);
+		characterHpBarDictionary.Add (target, instantiatedHpBar);
+		characterHpBarTimerDictionary.Add (target, 0.0f);
+		instantiatedHpBar.transform.position = CalculateHpBarPosition (target);
+		if (target.tag == "Enemy") {
+			Transform fillArea = instantiatedHpBar.transform.Find ("Fill Area");
+			fillArea.GetComponentInChildren<Image> ().color = new Color (1f, 0f, 0f);
+		}
+	}
+
+	public void Dead (CharacterMovement characterMovement)
+	{
+		RemoveCharacterHpBar (characterMovement);
+	}
+
+	void RemoveCharacterHpBar (CharacterMovement target)
+	{
+		Destroy (characterHpBarDictionary [target]);
+		characterHpBarDictionary.Remove (target);
+		characterHpBarTimerDictionary.Remove (target);
+	}
+
+	Vector3 CalculateHpBarPosition (CharacterMovement target)
+	{
+		return Camera.main.WorldToScreenPoint (target.transform.position - new Vector3(0, 0.2f, 0));
 	}
 
 	void ShowDamage(GameObject target, float damage) {
@@ -44,9 +110,7 @@ public class UICanvas : MonoBehaviour {
 		GameObject skillDescriptionObject = new GameObject ("SkillDescription");
 		skillDescriptionObject.transform.SetParent (skillButtons [skillIndex].transform, false);
 		RectTransform skillDescriptionRectTransform = skillDescriptionObject.AddComponent<RectTransform> ();
-		GameObject skillDescriptionImageObject = new GameObject ("Image");
-		skillDescriptionImageObject.transform.SetParent (skillDescriptionObject.transform, false);
-		Image skillDeiscriptionImage = skillDescriptionImageObject.AddComponent<Image> ();
+		Image skillDeiscriptionImage = skillDescriptionObject.AddComponent<Image> ();
 		skillDeiscriptionImage.sprite = skillDescriptionSprite;
 		skillDeiscriptionImage.type = Image.Type.Sliced;
 		skillDeiscriptionImage.color = new Color (0f, 0f, 0f, 0.5f);
@@ -64,29 +128,51 @@ public class UICanvas : MonoBehaviour {
 
 		skillDeiscriptionImage.rectTransform.sizeDelta = new Vector2 (skillDescriptionText.preferredWidth + 20, skillDescriptionText.preferredHeight - 10);
 
-		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
 		RectTransform imageRectTransform = skillDeiscriptionImage.rectTransform;
-
-		float delta = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
-
-		float canvasMaxX = CalculateMax (canvasRectTransform, delta).x;
-		float imageMaxX = CalculateMax (imageRectTransform, delta).x;
 
 		float localX = 0f;
 		float localY = 25 + skillDeiscriptionImage.rectTransform.sizeDelta.y * 0.5f;
-
-		if (canvasMaxX < imageMaxX) {
-			float diffrence = imageMaxX - canvasMaxX;
-			Debug.Log (diffrence);
-			localX = -diffrence;
-		}
-
-		skillDescriptionRectTransform.anchoredPosition = new Vector2 (localX, localY);
+		Vector2 localPosition = new Vector2(localX, localY);
+		SetAnchoredPosition (skillDescriptionRectTransform, localPosition);
 	}
 
-	Vector2 CalculateMax (RectTransform rectTransform, float delta)
+	void SetAnchoredPosition (RectTransform rectTransform, Vector2 position)
 	{
-		return new Vector2 (rectTransform.position.x / delta + rectTransform.sizeDelta.x * 0.5f, rectTransform.position.y / delta + rectTransform.sizeDelta.y * 0.5f);
+		rectTransform.anchoredPosition = position;
+
+		Vector2 areaOutOfCanvas = CalculateAreaOutOfCanvas (rectTransform);
+
+		rectTransform.anchoredPosition = position - areaOutOfCanvas;
+	}
+
+	Vector2 CalculateAreaOutOfCanvas(RectTransform rectTransform) {
+		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
+		Vector2 canvasMax = CalculateMax (canvasRectTransform);
+		Vector2 rectMax = CalculateMax (rectTransform);
+
+		float x = 0.0f;
+		float y = 0.0f;
+
+		if (canvasMax.x < rectMax.x) {
+			float diffrence = rectMax.x - canvasMax.x;
+			x = diffrence;
+		}
+
+		if (canvasMax.y < rectMax.y) {
+			float diffrence = rectMax.y - canvasMax.y;
+			y = diffrence;
+		}
+
+		return new Vector2 (x, y);
+	}
+
+	Vector2 CalculateMax (RectTransform rectTransform)
+	{
+		RectTransform canvasRectTransform = GetComponent<RectTransform> ();
+		float deltaX = canvasRectTransform.position.x / (canvasRectTransform.sizeDelta.x * 0.5f);
+		float deltaY = canvasRectTransform.position.y / (canvasRectTransform.sizeDelta.y * 0.5f);
+
+		return new Vector2 (rectTransform.position.x / deltaX + rectTransform.sizeDelta.x * 0.5f, rectTransform.position.y / deltaY + rectTransform.sizeDelta.y * 0.5f);
 	}
 
 	public void UnshowSkillDescription(int skillIndex) {
@@ -99,7 +185,7 @@ public class UICanvas : MonoBehaviour {
 		PlayerMovement playerMovement = player.GetComponent<PlayerMovement> ();
 		hpSlider.value = playerMovement.hp / playerMovement.maxHp;
 		hpSlider.fillRect.GetComponent<Image> ().color = new Color (1f, hpSlider.value, hpSlider.value);
-		hpUI.GetComponentInChildren<Text> ().text = Mathf.CeilToInt (playerMovement.hp).ToString();
+		hpSlider.GetComponentInChildren<Text> ().text = Mathf.CeilToInt (playerMovement.hp).ToString();
 	}
 
 	public void SetCanUseSkill (int skillIndex, Skill skill)
@@ -125,14 +211,17 @@ public class UICanvas : MonoBehaviour {
 		Destroy (currentScrollView);
 		currentScrollView = Instantiate (obtainedSkillScrollView, skillButtons[atCanUseSkillIndex].transform);
 		RectTransform rectTransform = currentScrollView.GetComponent<RectTransform> ();
-		rectTransform.localPosition = new Vector2 (0, 180);
-		currentScrollView.transform.SetParent (transform);
-		currentScrollView.transform.SetSiblingIndex (0);
 
 		int contentHeight = 55 * obtainedSkills.Count;
 		Transform contentTransform = currentScrollView.transform.Find ("Viewport").Find ("Content");
 		RectTransform contentRectTransform = contentTransform.GetComponent<RectTransform> ();
 		contentRectTransform.sizeDelta = new Vector2 (0, contentHeight);
+
+		Vector2 position = new Vector2 (0, 180);
+		SetAnchoredPosition (rectTransform, position);
+
+		currentScrollView.transform.SetParent (transform);
+		currentScrollView.transform.SetSiblingIndex (0);
 
 		EventTrigger unshowTrigger = currentScrollView.AddComponent<EventTrigger> ();
 		EventTrigger.Entry unshowTriggerEntry = new EventTrigger.Entry ();

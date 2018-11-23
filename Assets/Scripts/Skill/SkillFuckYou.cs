@@ -36,8 +36,9 @@ public class SkillFuckYou : Skill {
 	public override void SkillAction ()
 	{
 		base.SkillAction ();
-		instantiatedHitObject = Instantiate (hitObject, caster.hitObjectSpawnPoint);
 		hitObjectSpawnPosition = caster.hitObjectSpawnPoint.transform.position;
+		instantiatedHitObject = Instantiate (hitObject);
+		instantiatedHitObject.transform.position = hitObjectSpawnPosition;
 		HitObject hitObjectScript = instantiatedHitObject.GetComponent<HitObject> ();
 		hitObjectScript.Hit (caster, destination, targetTag);
 		hitObjectScript.damage = CalculateDamage (caster);
@@ -57,6 +58,6 @@ public class SkillFuckYou : Skill {
 
 	public override string GetDescription (CharacterMovement caster)
 	{
-		return GetSkillDescriptionTitle(caster) + "<color=" + DESCRIPTION_COLOR + "><b>" + caster.name + "</b>" + "(이)가 " + skillBasicDamage.ToString() + "(<color=" + DAMAGE_COEFFICIENT_COLOR + ">+" + (skillDamageCoefficient * caster.attackPower).ToString() + "</color>)" + "의 데미지를 주는 엿을 날립니다." + "</color>";
+		return GetSkillDescriptionTitle(caster) + "<color=" + DESCRIPTION_COLOR + "><b>" + caster.name + "</b>" + "(이)가 " + skillBasicDamage.ToString() + "(<color=" + DAMAGE_COEFFICIENT_COLOR + ">+" + (skillDamageCoefficient * caster.attackPower).ToString() + "</color>)" + "의 데미지를 주는 엿을 날립니다.\n엿에 닿은 적은 0.1초에 한 번씩 데미지를 입습니다." + "</color>";
 	}
 }
