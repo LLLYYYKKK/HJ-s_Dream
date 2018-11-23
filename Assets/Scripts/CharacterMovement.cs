@@ -41,6 +41,7 @@ public class CharacterMovement : MonoBehaviour {
 		}
 	}
 	protected SpriteRenderer spriteRenderer;
+	protected GameObject shadow;
 	protected AudioSource audioSource;
 	protected UICanvas uiCanvas;
 
@@ -71,6 +72,7 @@ public class CharacterMovement : MonoBehaviour {
 		center = transform.Find ("Center");
 		hitObjectSpawnPoint = transform.Find ("HitObjectSpawnPoint");
 		uiCanvas = GameObject.FindGameObjectWithTag ("UICanvas").GetComponent<UICanvas> ();
+		CreateShadow ();
 
 		isActive = true;
 		canMove = true;
@@ -130,6 +132,8 @@ public class CharacterMovement : MonoBehaviour {
 		animator.SetInteger ("Direction", direction);
 		animator.SetBool ("OnAttack", onAttack);
 		animator.SetBool ("CanMove", canMove);
+
+		UpdateShadow ();
 	}
 
 	protected virtual void FixedUpdate () {
@@ -151,6 +155,23 @@ public class CharacterMovement : MonoBehaviour {
 			velocity = Vector2.Distance (prevPosition, transform.position);
 			prevPosition = transform.position;
 		}
+	}
+
+	void CreateShadow ()
+	{
+		shadow = new GameObject ("Shadow");
+		shadow.transform.SetParent (transform, false);
+		shadow.transform.localPosition = new Vector2 (0f, -0.1f);
+		SpriteRenderer shadowSpriteRenderer = shadow.AddComponent<SpriteRenderer> ();
+		shadowSpriteRenderer.sortingLayerName = "Shadow";
+		Color shadowColor = new Color (0f, 0f, 0f, 0.5f);
+		shadowSpriteRenderer.color = shadowColor;
+	}
+
+	void UpdateShadow() {
+		shadow.GetComponent<SpriteRenderer> ().sprite = spriteRenderer.sprite;
+		Vector2 spriteLocalScale = spriteRenderer.transform.localScale;
+		shadow.transform.localScale = new Vector2 (spriteLocalScale.x * 0.7f, spriteLocalScale.y * 0.3f);
 	}
 
 	protected virtual void MovePosition(Vector2 position) {
