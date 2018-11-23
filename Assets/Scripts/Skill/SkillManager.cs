@@ -116,6 +116,9 @@ public class SkillManager : MonoBehaviour {
 			}
 
 			obtainedSkills.Add (Instantiate (skill, obtainedSkillsTransform));
+			if (canUseSkills [0] == null) {
+				SetCanUseSkill (0, 0);	
+			}
 		}
 	}
 

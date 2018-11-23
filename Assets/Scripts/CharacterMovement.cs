@@ -9,7 +9,6 @@ public class CharacterMovement : MonoBehaviour {
 	[Range(0.2f, 5f)] public float attackTime = 1.0f;
 	[Range(0f, 0.4f)] public float skillCoolTimeReductionRate;
 	public string name;
-	public GameObject hpBar;
 
 	public float attackPower = 2.0f;
 

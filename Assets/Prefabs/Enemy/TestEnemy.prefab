@@ -292,7 +292,7 @@ MonoBehaviour:
   deadSound: {fileID: 8300000, guid: 9777e3cbb3fde4859873b9be23990e1a, type: 3}
   moveSound: {fileID: 8300000, guid: 83155882bccac4e10b90400ed3fe9fc8, type: 3}
   center: {fileID: 0}
-  playerFinderRange: 5
+  playerFinderRange: 8
 --- !u!212 &212916588281710598
 SpriteRenderer:
   m_ObjectHideFlags: 1

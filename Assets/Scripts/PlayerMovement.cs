@@ -14,8 +14,10 @@ public class PlayerMovement : CharacterMovement {
 	}
 
 	void Start() {
-		skillManager.ObtainSkill (basicSkill);
-		skillManager.SetCanUseSkill (0, 0);
+		if (basicSkill != null) {
+			skillManager.ObtainSkill (basicSkill);
+			skillManager.SetCanUseSkill (0, 0);
+		}
 	}
 
 	protected override void HitTargetAction ()
