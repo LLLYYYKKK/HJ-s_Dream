@@ -325,10 +325,15 @@ public class CharacterMovement : MonoBehaviour {
 
 			deadTimer += Time.deltaTime;
 			if (deadTimer >= deadTime) {
-				uiCanvas.Dead (this);
-				Destroy (gameObject);
+				DeadAction ();
 			}
 		}
+	}
+
+	protected virtual void DeadAction ()
+	{
+		uiCanvas.Dead (this);
+		Destroy (gameObject);
 	}
 
 	void PlayMoveSound() {

@@ -242,7 +242,7 @@ public class UICanvas : MonoBehaviour {
 		RectTransform contentRectTransform = contentTransform.GetComponent<RectTransform> ();
 		contentRectTransform.sizeDelta = new Vector2 (0, contentHeight);
 
-		Vector2 position = new Vector2 (0, 180);
+		Vector2 position = new Vector2 (0, 170);
 		SetAnchoredPosition (rectTransform, position);
 
 		currentScrollView.transform.SetParent (transform);

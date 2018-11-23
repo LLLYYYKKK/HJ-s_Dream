@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 212353690435387498}
   - component: {fileID: 70862856094141520}
   - component: {fileID: 114502166287320172}
+  - component: {fileID: 114839437376691170}
   m_Layer: 0
   m_Name: FuckYouSkillItem
   m_TagString: Untagged
@@ -69,6 +70,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   skill: {fileID: 1952326388866344, guid: 20904b0718b8cda4fbb00c609ea151ea, type: 2}
+--- !u!114 &114839437376691170
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1589900082849440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed7b894719cc9b845ad57b16cb65f1f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMaterial: {fileID: 2100000, guid: ded402ba4faf9ff4ea7f3ca6ad7a6e26, type: 2}
+  outlineSize: 7
+  outlineBlur: 0
+  outlineColor: {r: 1, g: 0.6838235, b: 0.8866126, a: 1}
+  includeChildren: 0
+  childLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  childrenOverlap: 0
+  generatesOnStart: 1
+  isAnimated: 0
+  isIsometric: 0
 --- !u!212 &212353690435387498
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -83,7 +107,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: c0f116854320e134cbd70e9bfffd8dc3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -100,8 +124,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -773192411
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 0affa43df6185b14bac55ffe5a845baf, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

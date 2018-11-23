@@ -54,14 +54,14 @@ TagManager:
   - name: Shadow
     uniqueID: 3468477061
     locked: 0
-  - name: Skill
-    uniqueID: 526112679
-    locked: 0
   - name: Enemy
     uniqueID: 2018453767
     locked: 0
   - name: Player
     uniqueID: 1211533105
+    locked: 0
+  - name: Skill
+    uniqueID: 526112679
     locked: 0
   - name: Effect
     uniqueID: 1080752273
