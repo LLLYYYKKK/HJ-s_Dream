@@ -16,6 +16,9 @@ public class Door : MonoBehaviour {
 		animator = GetComponent<Animator> ();
 		enterPoint = transform.Find ("EnterPoint").position;
 		isOpened = false;
+	}
+
+	void Start() {
 		animator.SetTrigger ("Close");
 	}
 
