@@ -133,6 +133,7 @@ public class StageManager : MonoBehaviour {
 		int minNumberOfEnemy = Random.Range (0, minNumberOfEnemyRange);
 		int maxNumberOfEnemy = Random.Range (minNumberOfEnemyRange, maxNumberOfEnemyRange);
 		int numberOfEnemy = Random.Range (minNumberOfEnemy, maxNumberOfEnemy);
+		BoxCollider2D[] spawnAreas = room.spawnAreas;
 
 		GameObject clearReward = null;
 		float itemRoll = Random.Range (0f, 1f);
@@ -142,7 +143,8 @@ public class StageManager : MonoBehaviour {
 
 		Vector2[] spawnPoints = new Vector2[numberOfEnemy];
 		for (int i = 0; i < numberOfEnemy; i++) {
-			spawnPoints [i] = new Vector2 (Random.Range (room.minSpawnRange.x, room.maxSpawnRange.x), Random.Range (room.minSpawnRange.y, room.maxSpawnRange.y));
+			BoxCollider2D spawnArea = spawnAreas[Random.Range(0, spawnAreas.Length)];
+			spawnPoints [i] = spawnArea.offset + new Vector2(Random.Range(-spawnArea.size.x, spawnArea.size.x) / 2f, Random.Range(-spawnArea.size.y, spawnArea.size.y) / 2f);
 		}
 
 		room.spawnPoints = spawnPoints;

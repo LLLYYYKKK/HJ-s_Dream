@@ -6,9 +6,8 @@ public class RoomManager : MonoBehaviour {
 	public enum Direction {North, South, East, West};
 
 	public GameObject[] canSpawnEnemies;
+	public BoxCollider2D[] spawnAreas;
 	public Vector2[] spawnPoints;
-	public Vector2 minSpawnRange;
-	public Vector2 maxSpawnRange;
 	public AudioClip doorOpenSound;
 	public Door[] doors;
 	public GameObject clearReward;
@@ -25,6 +24,7 @@ public class RoomManager : MonoBehaviour {
 		instantiatedEnemies = new List<GameObject> ();
 		audioSource = GetComponent<AudioSource> ();
 		isCleared = false;
+		spawnAreas = transform.Find("SpawnArea").GetComponents<BoxCollider2D> ();
 	}
 
 	public void SpawnEnemies() {
