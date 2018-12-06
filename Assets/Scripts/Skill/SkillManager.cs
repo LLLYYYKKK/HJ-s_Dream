@@ -149,7 +149,7 @@ public class SkillManager : MonoBehaviour {
 	public void SkillUsed (Skill skill)
 	{
 		currentSkill = skill;
-		playerController.controlState = PlayerController.ATTACK_STATE;
+		playerController.controlState = PlayerController.ControlState.Attack;
 	}
 
 	public void SkillIsInCooTime ()

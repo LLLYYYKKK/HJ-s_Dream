@@ -14,10 +14,8 @@ public class PlayerController : MonoBehaviour {
 
 	int cursorCount;
 
-	[System.NonSerialized] public int controlState;
-	public const int IDLE_STATE = 0;
-	public const int WAIT_ATTACK_STATE = 1;
-	public const int ATTACK_STATE = 2;
+	public enum ControlState {Idle, WaitAttack, Attack};
+	public ControlState controlState;
 
 	void Awake() {
 		playerMovement = GetComponent<PlayerMovement> ();
@@ -25,7 +23,7 @@ public class PlayerController : MonoBehaviour {
 		center = transform.Find ("Center");
 		attackRangeShower = center.GetChild(0).gameObject;
 		playerMovement.canAttack = false;
-		controlState = IDLE_STATE;
+		controlState = ControlState.Idle;
 
 		cursorCount = 0;
 
@@ -48,13 +46,12 @@ public class PlayerController : MonoBehaviour {
 			}
 
 			if (Input.GetButtonDown ("Stop")) {
-				;
 				playerMovement.Stop ();
-				controlState = IDLE_STATE;
+				controlState = ControlState.Idle;
 			}
 
 			if (Input.GetButtonDown ("Attack")) {
-				controlState = WAIT_ATTACK_STATE;
+				controlState = ControlState.WaitAttack;
 			}
 
 			if (Input.GetButtonDown ("Skill1")) {
@@ -78,13 +75,13 @@ public class PlayerController : MonoBehaviour {
 			}
 
 			switch (controlState) {
-			case IDLE_STATE:
+			case ControlState.Idle:
 				playerMovement.canAttack = false;
 				playerMovement.attackTarget = null;
 				playerMovement.isAlwaysTracingTarget = false;
 				break;
 
-			case WAIT_ATTACK_STATE:
+			case ControlState.WaitAttack:
 				attackRangeShower.SetActive (true);
 				attackRangeShower.transform.localScale = new Vector3 (playerMovement.GetAttackRange (), playerMovement.GetAttackRange ());
 
@@ -95,7 +92,7 @@ public class PlayerController : MonoBehaviour {
 					SetDestinationToMousePosition ();
 				}
 				break;
-			case ATTACK_STATE:
+			case ControlState.Attack:
 				GameObject nearstEnemy = FindNearstEnemy ();
 				playerMovement.isAlwaysTracingTarget = true;
 
@@ -112,7 +109,7 @@ public class PlayerController : MonoBehaviour {
 
 	void Move ()
 	{
-		controlState = IDLE_STATE;
+		controlState = ControlState.Idle;
 		SetDestinationToMousePosition ();
 		if (!skillManager.IsInSkillCasting()) {
 			playerMovement.CancleAttack ();
@@ -125,7 +122,7 @@ public class PlayerController : MonoBehaviour {
 		playerMovement.SetDestinatioTo(mousePosition);
 
 		switch (controlState) {
-		case IDLE_STATE:
+		case ControlState.Idle:
 			cursorCount = 0;
 			Instantiate (footprint, mousePosition, Quaternion.identity);
 			break;
@@ -181,7 +178,7 @@ public class PlayerController : MonoBehaviour {
 
 	void AttackEnemy (GameObject clickedEnemy)
 	{
-		controlState = ATTACK_STATE;
+		controlState = ControlState.Attack;
 		if (!skillManager.IsInSkillCasting ()) {
 			playerMovement.canAttack = true;
 		}
@@ -192,7 +189,7 @@ public class PlayerController : MonoBehaviour {
 	{
 		while(true) {
 			switch (controlState) {
-			case IDLE_STATE:
+			case ControlState.Idle:
 				if (cursorCount < idleCursor.Length) {
 					Cursor.SetCursor (idleCursor [cursorCount], new Vector2(10, 10), CursorMode.Auto);
 				} else {
