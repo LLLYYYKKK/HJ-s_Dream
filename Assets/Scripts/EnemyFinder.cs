@@ -12,7 +12,7 @@ public class EnemyFinder : MonoBehaviour {
 	}
 
 	void Update() {
-		attackRangeTrigger.radius = characterMovement.attackRange;
+		attackRangeTrigger.radius = characterMovement.GetAttackRange();
 	}
 
 	void OnTriggerEnter2D(Collider2D other) {

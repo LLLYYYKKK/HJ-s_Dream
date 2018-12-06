@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Skill : MonoBehaviour {
 	[Range(1, 5)] public int skillLevel = 1;
+	public SkillManager skillManager;
 
 	public float skillCastTime = 0.5f;
 	public float skillActionTime = 0.3f;
@@ -72,13 +73,10 @@ public class Skill : MonoBehaviour {
 	{
 		isSkillActivate = true;
 		canSkillAction = true;
-		this.caster = caster;
-		caster.CancleAttack ();
-		caster.AttackDone ();
-		caster.See (Camera.main.ScreenToWorldPoint (Input.mousePosition));
+		caster.UseSkill (skillAnimationTrigger, skillCastTime);
 		skillCoolTimer = CalculateCoolTime(caster);
-		caster.Animator.SetTrigger (skillAnimationTrigger);
-		caster.Animator.speed = 1.0f / skillCastTime;
+
+		skillManager.SkillUsed (this);
 	}
 
 	public virtual void SkillAction () {
@@ -89,9 +87,7 @@ public class Skill : MonoBehaviour {
 	public virtual void EndSkill () {
 		isSkillActivate = false;
 		skillCastTimer = 0.0f;
-		caster.Animator.speed = 1.0f;
-		caster.canAttack = true;
-		caster.canMove = true;
+		caster.EndSkill ();
 	}
 
 	public virtual string GetDescription(CharacterMovement caster) {
@@ -99,7 +95,7 @@ public class Skill : MonoBehaviour {
 	}
 
 	public virtual float CalculateDamage(CharacterMovement caster) {
-		return skillBasicDamage + skillDamageCoefficient * caster.attackPower;
+		return skillBasicDamage + skillDamageCoefficient * caster.GetAttackPower();
 	}
 
 	public virtual void CoolTimeEnd ()
@@ -113,6 +109,21 @@ public class Skill : MonoBehaviour {
 
 	float CalculateCoolTime (CharacterMovement caster)
 	{
-		return skillCoolTime - skillCoolTime * caster.skillCoolTimeReductionRate;
+		return skillCoolTime - skillCoolTime * caster.GetSkillCoolTimeReductionRate();
+	}
+
+	public virtual void TryUseSkill (CharacterMovement caster, Vector2 mousePosition)
+	{
+		if (skillCoolTimer > 0.0f) {
+			skillManager.SkillIsInCooTime ();
+		} else {
+			this.caster = caster;
+			UseSkill (caster, mousePosition);
+		}
+	}
+		
+	protected string BuildSkillCoefficientDescription (CharacterMovement caster, float skillDamageCoefficient)
+	{
+		return "(<color=" + DAMAGE_COEFFICIENT_COLOR + ">+" + (skillDamageCoefficient * caster.GetAttackPower ()).ToString () + "</color>)";
 	}
 }

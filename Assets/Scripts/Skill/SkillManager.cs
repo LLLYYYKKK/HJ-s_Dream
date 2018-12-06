@@ -15,6 +15,7 @@ public class SkillManager : MonoBehaviour {
 	AudioSource audioSource;
 
 	Skill currentSkill;
+	int nextSkillIndex = -1;
 	GameObject currentAttackTarget;
 	UICanvas uiCanvas;
 
@@ -44,64 +45,34 @@ public class SkillManager : MonoBehaviour {
 				Skill skill = canUseSkills [i].GetComponent<Skill> ();
 				uiCanvas.ShowSkillCoolTime (i, skill.skillCoolTimer);
 			}
+
+			if (nextSkillIndex != -1) {
+				TryUseSkill (nextSkillIndex);
+			}
 		}
 	}
 
-	public void UseSkill (int skillIndex)
+	public void TryUseSkill (int skillIndex)
 	{
-		if (IsCanUseSkillExist(skillIndex)) {
-			Vector2 mousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-
+		if (IsCanUseSkillExist (skillIndex)) {
 			if (currentSkill != null) {
 				if (currentSkill.isSkillActivate) {
 					Debug.Log ("다른 스킬을 사용중");
+					nextSkillIndex = skillIndex;
 					return;
 				}
 			}
 
+			if (nextSkillIndex == skillIndex) {
+				nextSkillIndex = -1;
+			}
+			Vector2 mousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 			Skill selectedSkill = canUseSkills [skillIndex].GetComponent<Skill> ();
-			if (selectedSkill.skillCoolTimer != 0.0f) {
-				audioSource.PlayOneShot (skillCoolTimeSound);
-				return;
-			}
-				
-			playerController.controlState = PlayerController.ATTACK_STATE;
-
-			currentSkill = selectedSkill;
-			currentSkill.UseSkill (playerMovement, mousePosition);
-
-			/*
-			if (!isUsingSkill) {
-				if (skillTimers [skillIndex] == 0.0f) {
-					currentSkill = canUseSkills[skillIndex].GetComponent<Skill> ();
-					currentSkill.UseSkill (playerMovement);
-
-
-					playerMovement.canMove = false;
-					playerMovement.Animator.SetTrigger (currentSkill.skillAnimationTrigger);
-					playerMovement.Animator.speed = 1.0f / currentSkill.skillCastTime;
-					skillCastTimer = 0.0f;
-					skillTimers [skillIndex] = currentSkill.skillCoolTime - currentSkill.skillCoolTime * playerMovement.coolTimeReductionRate;
-					isUsingSkill = true;
-				} else {
-					audioSource.PlayOneShot (skillCoolTimeSound);
-				}
-			} else {
-				Debug.Log ("스킬을 사용중");
-			}
-			*/
+			selectedSkill.TryUseSkill (playerMovement, mousePosition);
 		}
+
 	}
 
-	/*
-	void EndUseSkill ()
-	{
-		playerMovement.canAttack = true;
-		playerMovement.canMove = true;
-		playerMovement.Animator.speed = 1.0f;
-		playerController.controlState = PlayerController.ATTACK_STATE;
-	}
-	*/
 	public void ObtainSkill (GameObject skill) {
 		if (skill.GetComponent<Skill> () != null) {
 			Skill skillScript = skill.GetComponent<Skill> ();
@@ -115,9 +86,14 @@ public class SkillManager : MonoBehaviour {
 				}
 			}
 
-			obtainedSkills.Add (Instantiate (skill, obtainedSkillsTransform));
-			if (canUseSkills [0] == null) {
-				SetCanUseSkill (0, 0);	
+			GameObject newSkill = Instantiate(skill, obtainedSkillsTransform);
+			newSkill.GetComponent<Skill> ().skillManager = this;
+			obtainedSkills.Add (newSkill);
+			for (int i = 0; i < canUseSkillSize; i++) {
+				if (canUseSkills [i] == null) {
+					SetCanUseSkill (i, obtainedSkills.Count - 1);
+					break;
+				}
 			}
 		}
 	}
@@ -168,5 +144,36 @@ public class SkillManager : MonoBehaviour {
 			return true;
 		}
 		return false;
+	}
+
+	public void SkillUsed (Skill skill)
+	{
+		currentSkill = skill;
+		playerController.controlState = PlayerController.ATTACK_STATE;
+	}
+
+	public void SkillIsInCooTime ()
+	{
+		audioSource.PlayOneShot (skillCoolTimeSound);
+	}
+
+	public bool IsInSkillCasting ()
+	{
+		if (currentSkill != null) {
+			return currentSkill.isSkillActivate;
+		}
+		return false;
+	}
+
+	public void CancleWaitCastSkill ()
+	{
+		nextSkillIndex = -1;
+		foreach (GameObject canUseSkill in canUseSkills) {
+			try {
+				TargetingSkill targetingSkill = canUseSkill.GetComponent<TargetingSkill> ();
+				targetingSkill.CancleTrace();
+			} catch {
+			}
+		}
 	}
 }

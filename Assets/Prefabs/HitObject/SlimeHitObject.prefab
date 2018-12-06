@@ -88,7 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eded86935e9ee2f4e94f6caba83c257e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  liveTime: 0.4
+  liveTime: 0.2
   speed: 0
   isItTargeting: 0
   isSetAttackTargetIfNotExist: 1

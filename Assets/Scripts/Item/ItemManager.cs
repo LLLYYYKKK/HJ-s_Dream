@@ -6,7 +6,7 @@ public class ItemManager : MonoBehaviour {
 	public AudioClip obtainItemSound;
 
 	PlayerMovement playerMovement;
-	List<Item> obtainedItems;
+	public List<Item> obtainedItems;
 	AudioSource audioSource;
 
 	void Awake() {

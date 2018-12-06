@@ -8,6 +8,7 @@ public class UICanvas : MonoBehaviour {
 	public Sprite skillDescriptionSprite;
 	public GameObject obtainedSkillScrollView;
 	public Sprite defaultSkillButtonSprite;
+	public GameObject normalRoom;
 	public GameObject characterHpBar;
 	public AudioClip clickSound;
 	public AudioClip enterSound;
@@ -21,8 +22,17 @@ public class UICanvas : MonoBehaviour {
 	Button[] skillButtons;
 	Dictionary<CharacterMovement, GameObject> characterHpBarDictionary;
 	Dictionary<CharacterMovement, float> characterHpBarTimerDictionary;
+	Dictionary<RoomManager, GameObject> roomDictionary;
 
 	GameObject currentScrollView;
+	Transform mapContent;
+	Vector2Int currentRoomMapPoint;
+
+	GameObject[,] rooms;
+	Text attackPowerParameter;
+	Text attackTimeParamenter;
+	Text speedParameter;
+	Text coolTimeReductionParameter;
 
 	void Awake() {
 		audioSource = GetComponent<AudioSource> ();
@@ -46,6 +56,21 @@ public class UICanvas : MonoBehaviour {
 		ShowPlayerHp ();
 		characterHpBarDictionary = new Dictionary<CharacterMovement, GameObject> ();
 		characterHpBarTimerDictionary = new Dictionary<CharacterMovement, float> ();
+
+		mapContent = transform.Find ("MapUI").Find ("ViewPort").Find ("MapContent");
+		roomDictionary = new Dictionary<RoomManager, GameObject> ();
+
+		Transform statParameterUI = statusUI.Find ("StatUI").Find ("StatParameterUI");
+		attackPowerParameter = statParameterUI.Find ("AttackPowerUI").GetComponentInChildren<Text> ();
+		attackTimeParamenter = statParameterUI.Find ("AttackTimeUI").GetComponentInChildren<Text> ();
+		speedParameter = statParameterUI.Find ("SpeedUI").GetComponentInChildren<Text> ();
+		coolTimeReductionParameter = statParameterUI.Find ("CoolTimeReductionUI").GetComponentInChildren<Text> ();
+
+		PlayerMovement playerMovement = player.GetComponent<PlayerMovement> ();
+		UpdateAttackPower (playerMovement.GetAttackPower());
+		UpdateAttackTime (playerMovement.GetAttackTime ());
+		UpdateSpeed (playerMovement.GetSpeed ());
+		UpdateCoolTimeReduction (playerMovement.GetSkillCoolTimeReductionRate ());
 	}
 
 	void Update() {
@@ -90,11 +115,16 @@ public class UICanvas : MonoBehaviour {
 
 	void CreateCharacterHpBar (CharacterMovement target)
 	{
+		if (target.tag == "Enemy") {
+			if (target.GetComponent<EnemyMovement> ().enemyGrade != EnemyMovement.Grade.Normal) {
+				return;
+			}
+		}
 		GameObject instantiatedHpBar = Instantiate (characterHpBar, transform);
 		characterHpBarDictionary.Add (target, instantiatedHpBar);
 		characterHpBarTimerDictionary.Add (target, 0.0f);
 		instantiatedHpBar.transform.position = CalculateHpBarPosition (target);
-		if (target.tag == "Enemy") {
+		if (target.tag != "Player") {
 			Transform fillArea = instantiatedHpBar.transform.Find ("Fill Area");
 			fillArea.GetComponentInChildren<Image> ().color = new Color (1f, 0f, 0f);
 		}
@@ -129,8 +159,18 @@ public class UICanvas : MonoBehaviour {
 	}
 
 	public void ShowSkillDescription(int skillIndex, Skill skill) {
+		GameObject skillDescription = MakeSkillDescription (skillIndex, skill);
+		RectTransform skillDescriptionRectTransform = skillDescription.GetComponent<RectTransform> ();
+		skillDescription.transform.SetParent (skillButtons [skillIndex].transform, false);
+		float localX = 0f;
+		float localY = 25 + skillDescriptionRectTransform.sizeDelta.y * 0.5f;
+		Vector2 localPosition = new Vector2(localX, localY);
+
+		SetAnchoredPosition (skillDescriptionRectTransform, localPosition);
+	}
+
+	GameObject MakeSkillDescription(int skillIndex, Skill skill) {
 		GameObject skillDescriptionObject = new GameObject ("SkillDescription");
-		skillDescriptionObject.transform.SetParent (skillButtons [skillIndex].transform, false);
 		RectTransform skillDescriptionRectTransform = skillDescriptionObject.AddComponent<RectTransform> ();
 		Image skillDeiscriptionImage = skillDescriptionObject.AddComponent<Image> ();
 		skillDeiscriptionImage.sprite = skillDescriptionSprite;
@@ -150,12 +190,7 @@ public class UICanvas : MonoBehaviour {
 
 		skillDeiscriptionImage.rectTransform.sizeDelta = new Vector2 (skillDescriptionText.preferredWidth + 20, skillDescriptionText.preferredHeight - 10);
 
-		RectTransform imageRectTransform = skillDeiscriptionImage.rectTransform;
-
-		float localX = 0f;
-		float localY = 25 + skillDeiscriptionImage.rectTransform.sizeDelta.y * 0.5f;
-		Vector2 localPosition = new Vector2(localX, localY);
-		SetAnchoredPosition (skillDescriptionRectTransform, localPosition);
+		return skillDescriptionObject;
 	}
 
 	void SetAnchoredPosition (RectTransform rectTransform, Vector2 position)
@@ -310,5 +345,92 @@ public class UICanvas : MonoBehaviour {
 		skillButtons [skillIndex].GetComponent<Image> ().sprite = defaultSkillButtonSprite;
 		skillButtons[skillIndex].transform.Find ("CoolTimeText").GetComponent<Text> ().text = "";
 		skillButtons [skillIndex].interactable = true;
+	}
+
+	public void EnterRoom (RoomManager.Direction direction)
+	{
+		Debug.Log (direction);
+		GameObject previousRoom = rooms [currentRoomMapPoint.x, currentRoomMapPoint.y];
+		Image roomMapImage = previousRoom.GetComponent<Image> ();
+		Color roomMapColor = roomMapImage.color;
+		roomMapImage.color = new Color (roomMapColor.r, roomMapColor.g, roomMapColor.b, 0.25f);
+
+		if (direction == RoomManager.Direction.South) {
+			currentRoomMapPoint += new Vector2Int (-1, 0);
+		} else if (direction == RoomManager.Direction.North) {
+			currentRoomMapPoint += new Vector2Int (1, 0);
+		} else if (direction == RoomManager.Direction.East) {
+			currentRoomMapPoint += new Vector2Int (0, -1);
+		} else if (direction == RoomManager.Direction.West) {
+			currentRoomMapPoint += new Vector2Int (0, 1);
+		}
+
+		GameObject currentRoom = rooms [currentRoomMapPoint.x, currentRoomMapPoint.y];
+		currentRoom.SetActive (true);
+		roomMapImage = currentRoom.GetComponent<Image> ();
+		roomMapColor = roomMapImage.color;
+		roomMapImage.color = new Color (roomMapColor.r, roomMapColor.g, roomMapColor.b, 1f);
+		mapContent.GetComponent<RectTransform> ().anchoredPosition = -(currentRoom.GetComponent<RectTransform> ().anchoredPosition);
+	}
+
+	public void CreateMap (int[,] roomMatrix, int stageSize)
+	{
+		rooms = new GameObject[stageSize, stageSize];
+
+		Vector2 roomMapSize = normalRoom.GetComponent<RectTransform> ().sizeDelta;
+		Vector2 position = Vector2.zero;
+		for (int i = 0; i < stageSize; i++) {
+			for (int j = 0; j < stageSize; j++) {
+				if (roomMatrix [i, j] == (int)RoomManager.RoomType.Base || roomMatrix [i, j] == (int)RoomManager.RoomType.Normal) {
+					GameObject roomMap = Instantiate (normalRoom, mapContent);
+					RectTransform roomMapRectTransform = roomMap.GetComponent<RectTransform> ();
+					rooms [i, j] = roomMap;
+					roomMapRectTransform.anchoredPosition = position;
+
+					if (roomMatrix [i, j] == (int)RoomManager.RoomType.Base) {
+						mapContent.GetComponent<RectTransform> ().anchoredPosition = -position;
+						currentRoomMapPoint = new Vector2Int (i, j);
+					} else {
+						roomMap.SetActive (false);
+					}
+				} else if (roomMatrix [i, j] == (int)RoomManager.RoomType.Item) {
+					GameObject roomMap = Instantiate (normalRoom, mapContent);
+					RectTransform roomMapRectTransform = roomMap.GetComponent<RectTransform> ();
+					roomMap.GetComponent<Image> ().color = new Color (1f, 1f, 0f);
+					rooms [i, j] = roomMap;
+					roomMapRectTransform.anchoredPosition = position;
+
+					roomMap.SetActive (false);
+				} else if (roomMatrix [i, j] == (int)RoomManager.RoomType.Champion) {
+					GameObject roomMap = Instantiate (normalRoom, mapContent);
+					RectTransform roomMapRectTransform = roomMap.GetComponent<RectTransform> ();
+					rooms [i, j] = roomMap;
+					roomMapRectTransform.anchoredPosition = position;
+
+					roomMap.SetActive (false);
+				}
+
+				position = new Vector2 (position.x + roomMapSize.x, position.y);
+			}
+
+			position = new Vector2 (0f, position.y - roomMapSize.y);
+		}
+	}
+
+	public void UpdateAttackPower (float attackPower)
+	{
+		attackPowerParameter.text = attackPower.ToString ();
+	}
+
+	public void UpdateAttackTime(float attackTime) {
+		attackTimeParamenter.text = attackTime.ToString ();
+	}
+
+	public void UpdateSpeed(float speed) {
+		speedParameter.text = speed.ToString ();
+	}
+
+	public void UpdateCoolTimeReduction(float reductionRate) {
+		coolTimeReductionParameter.text = reductionRate.ToString ();
 	}
 }

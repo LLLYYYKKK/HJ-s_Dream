@@ -3,21 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyMovement: CharacterMovement {
+	public enum Grade {Normal, Champion, Boss};
+	public Grade enemyGrade = Grade.Normal;
+
 	public float playerFinderRange = 3.0f;
+	public float dropItemProbability = 0.1f;
+	public GameObject[] canDropItems;
 	PlayerMovement player;
-	RoomManager roomManager;
+	public RoomManager roomManager;
+	RigidbodyType2D bodyType;
 
 	protected override void Awake ()
 	{
 		base.Awake ();
-		roomManager = GetComponentInParent<RoomManager> ();
-		player = GameObject.FindWithTag ("Player").GetComponent<PlayerMovement> ();;
+		player = GameObject.FindWithTag ("Player").GetComponent<PlayerMovement> ();
+		bodyType = rbody2D.bodyType;
 	}
 
 	protected override void Update() {
 		base.Update ();
-		spriteRenderer.sortingOrder = Mathf.RoundToInt (-transform.position.y * 10f + transform.position.x);
-		if (attackTarget == null && isActive) {
+		spriteRenderer.sortingOrder = Mathf.RoundToInt (-transform.position.y * 100f + transform.position.x * 100f);
+		EnemyUpdate ();
+	}
+
+	protected void EnemyUpdate() {
+		if (attackTarget == null && isAlive) {
 			FindPlayer ();
 		}
 
@@ -26,10 +36,6 @@ public class EnemyMovement: CharacterMovement {
 		}
 		float distanceBetweenPlayer = Vector2.Distance (player.center.position, center.position);
 		audioSource.volume = 1 - (distanceBetweenPlayer / 5f);
-	}
-
-	public override void SetDirectionTo(Vector2 destination) {
-		this.destination = destination;
 	}
 
 	void FindPlayer() {
@@ -41,6 +47,18 @@ public class EnemyMovement: CharacterMovement {
 		}
 	}
 
+	protected override void StartNewAttack ()
+	{
+		base.StartNewAttack ();
+		rbody2D.bodyType = RigidbodyType2D.Static;
+	}
+
+	public override void AttackDone ()
+	{
+		base.AttackDone ();
+		rbody2D.bodyType = bodyType;
+	}
+
 	public override void Hit (float damage, CharacterMovement attacker)
 	{
 		base.Hit (damage, attacker);
@@ -50,8 +68,12 @@ public class EnemyMovement: CharacterMovement {
 	protected override void DeadAction ()
 	{
 		base.DeadAction ();
-		roomManager.EnemyDead (this);
-	}
+		Debug.Log (roomManager == null);
+		if (roomManager != null) {
+			roomManager.EnemyDead (this);
+		}
+		DropItem ();
+	}	
 
 	bool IsHighlighted ()
 	{
@@ -68,5 +90,26 @@ public class EnemyMovement: CharacterMovement {
 
 	void Highlight ()
 	{
+	}
+
+	void DropItem ()
+	{
+		float itemRoll = Random.Range (0f, 1f);
+		if (itemRoll <= dropItemProbability + player.luck / 2f) {
+			Debug.Log (canDropItems.Length);
+			if (canDropItems.Length != 0 && canDropItems != null) {
+				GameObject item = Instantiate (canDropItems [Random.Range (0, canDropItems.Length)]);
+				item.transform.position = transform.position;
+				if (roomManager != null) {
+					item.transform.SetParent (roomManager.transform);
+				}
+			}
+		}
+	}
+
+	public override void CancleAttack ()
+	{
+		base.CancleAttack ();
+		SetDestinatioTo (transform.position);
 	}
 }

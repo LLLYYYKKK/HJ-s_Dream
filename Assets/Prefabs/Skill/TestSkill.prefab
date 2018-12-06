@@ -226,6 +226,7 @@ MonoBehaviour:
   isSetAttackTargetIfNotExist: 1
   maximumTargetCount: -1
   hitEffect: {fileID: 1196670630750820, guid: f2e6f0f608a8ed34c9facf00c6c903fa, type: 2}
+  range: 5
 --- !u!212 &212178810734649862
 SpriteRenderer:
   m_ObjectHideFlags: 1

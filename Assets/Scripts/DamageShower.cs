@@ -40,9 +40,15 @@ public class DamageShower : MonoBehaviour {
 		Font arialFont = (Font)Resources.GetBuiltinResource (typeof(Font), "Arial.ttf");
 		damageText.font = arialFont;
 		damageText.material = arialFont.material;
-		damageText.color = new Color (255, 255, 255);
-		damageText.fontSize = 18;
-		damageText.text = damage.ToString();
+		if (damage < 0) {
+			damageText.color = new Color (0, 1, 0);
+			damageText.fontSize = 25;
+			damageText.text = "+" + (-damage).ToString();
+		} else {
+			damageText.color = new Color (255, 255, 255);
+			damageText.fontSize = 18;
+			damageText.text = damage.ToString ();
+		}
 		damageText.alignment = TextAnchor.UpperCenter;
 		gameObject.AddComponent<Outline> ();
 	}

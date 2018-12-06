@@ -44,7 +44,7 @@ public class HitObject : MonoBehaviour {
 			float angle = Mathf.Atan2 (destination.y - transform.position.y, destination.x - transform.position.x) * Mathf.Rad2Deg;
 			transform.rotation = Quaternion.AngleAxis (angle, Vector3.forward);
 
-			if (!attackTarget.isActive) {
+			if (!attackTarget.isAlive) {
 				Destroy (gameObject);
 			}
 		}

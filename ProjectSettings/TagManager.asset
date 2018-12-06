@@ -8,6 +8,7 @@ TagManager:
   - Enemy
   - UICanvas
   - UICanvasHasScale
+  - EnemyAssociation
   layers:
   - Default
   - TransparentFX
@@ -48,6 +49,9 @@ TagManager:
   - name: Floor
     uniqueID: 614052227
     locked: 0
+  - name: Door
+    uniqueID: 3468574147
+    locked: 0
   - name: Item
     uniqueID: 3521774885
     locked: 0
@@ -59,6 +63,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 1211533105
+    locked: 0
+  - name: FlyingEnemy
+    uniqueID: 707638417
     locked: 0
   - name: Skill
     uniqueID: 526112679

@@ -4,17 +4,19 @@ using UnityEngine;
 using UnityEngine.AI;
 
 public class CharacterMovement : MonoBehaviour {
-	[Range(0.0f, 5f)] public float speed = 2f;
-	[Range(0.5f, 10f)] public float attackRange = 0.5f;
-	[Range(0.2f, 5f)] public float attackTime = 1.0f;
-	[Range(0f, 0.4f)] public float skillCoolTimeReductionRate;
-	public string name;
+	[Range(0.0f, 8f), SerializeField] protected float initialSpeed = 2f;
+	[Range(0.5f, 10f), SerializeField] protected float initialAttackRange = 0.5f;
+	[Range(0.2f, 5f), SerializeField] protected float initialAttackTime = 1.0f;
+	[SerializeField] protected float initialAttackPower = 2.0f;
+	[Range(0f, 0.4f), SerializeField] protected float InitialSkillCoolTimeReductionRate;
 
-	public float attackPower = 2.0f;
+	[Range(0.2f, 1f)] public float preAttackDelayProportion = 0.6f;
+	[Range(1f, 4f)] public float deadTime = 1f;
+
+	public string charcterName;
 
 	public float hp = 10.0f;
 	public float maxHp = 10.0f;
-	public float deadTime;
 
 	public bool isAlwaysTracingTarget = true;
 
@@ -24,7 +26,8 @@ public class CharacterMovement : MonoBehaviour {
 	public AudioClip deadSound;
 	public AudioClip moveSound;
 
-	[System.NonSerialized] public bool isActive;
+	public bool isRemoveColliderWhenDead = true;
+	[System.NonSerialized] public bool isAlive;
 	[System.NonSerialized] public bool canMove;
 	[System.NonSerialized] public bool canAttack;
 	[System.NonSerialized] public GameObject attackTarget;
@@ -48,11 +51,12 @@ public class CharacterMovement : MonoBehaviour {
 
 	float velocity;
 	float totalAttackTimer;
+	float preAttackDelayTimer;
 	float deadTimer;
 
-	bool isPreAttackDone;
+	protected bool isPreAttackDone;
 	bool onAttack;
-	bool canHitTarget;
+	protected bool canHitTarget;
 
 	Vector2 prevPosition;
 
@@ -62,6 +66,7 @@ public class CharacterMovement : MonoBehaviour {
 			return direction;
 			}
 	}
+	int directionToSet;
 
 	protected virtual void Awake() {
 		rbody2D = GetComponent<Rigidbody2D> ();
@@ -73,13 +78,14 @@ public class CharacterMovement : MonoBehaviour {
 		uiCanvas = GameObject.FindGameObjectWithTag ("UICanvas").GetComponent<UICanvas> ();
 		CreateShadow ();
 
-		isActive = true;
+		isAlive = true;
 		canMove = true;
 		canAttack = true;
 		isPreAttackDone = true;
 		canHitTarget = true;
 
 		direction = 1;
+		directionToSet = 1;
 
 		destination = transform.position;
 		velocity = 0.0f;
@@ -94,26 +100,30 @@ public class CharacterMovement : MonoBehaviour {
 		HitRecover ();
 		CheckDead ();
 
-		if (isAlwaysTracingTarget) {
-			if (attackTarget != null) {
-				if (!attackTarget.GetComponent<CharacterMovement>().isActive) {
-					CancleAttack ();
-					canAttack = true;
-				} else {
-					SetDirectionTo (attackTarget.transform.position);
+		if (isAlive) {
+			if (isAlwaysTracingTarget) {
+				if (attackTarget != null) {
+					if (!attackTarget.GetComponent<CharacterMovement>().isAlive) {
+						CancleAttack ();
+						canAttack = true;
+					} else {
+						SetDestinatioTo (attackTarget.transform.position);
+					}
 				}
 			}
-		}
 
-		if (!isPreAttackDone) {
-			totalAttackTimer += Time.deltaTime;
+			if (!isPreAttackDone) {
+				totalAttackTimer += Time.deltaTime;
+				preAttackDelayTimer += Time.deltaTime;
 
-			if (totalAttackTimer >= attackTime) {
-				AttackDone ();
+				if (preAttackDelayTimer >= GetAttackTime() * preAttackDelayProportion) {
+					HitTarget ();
+				}
+
+				if (totalAttackTimer >= GetAttackTime()) {
+					AttackDone ();
+				}
 			}
-		}
-
-		if (isActive) {
 			if (canAttack) {
 				if (IsAttackTargetInRange ()) {
 					if (isPreAttackDone) {
@@ -124,7 +134,12 @@ public class CharacterMovement : MonoBehaviour {
 				} else {
 				}
 			}
-				
+
+			float localScaleX = Mathf.Abs (transform.localScale.x);
+			if (direction == 2) {
+				localScaleX *= -1f;
+			}
+			transform.localScale = new Vector3 (localScaleX, transform.localScale.y, transform.localScale.z);
 		}
 
 		animator.SetFloat ("Velocity", velocity);
@@ -139,17 +154,20 @@ public class CharacterMovement : MonoBehaviour {
 		FixedUpdateCharacter ();
 	}
 
-	protected void FixedUpdateCharacter ()
+	protected virtual void FixedUpdateCharacter ()
 	{
-		if (isActive) {
+		if (isAlive) {
 			if (canMove) {
-				float step = speed * Time.fixedDeltaTime;
+				float step = GetSpeed() * Time.fixedDeltaTime;
 				Vector2 moveTowards = Vector2.MoveTowards (transform.position, destination, step);
 				MovePosition (moveTowards);
+				ChangeDirectionToMovepoint ();
 			}
+
 			else {
 				MovePosition (transform.position);
 			}
+
 		
 			velocity = Vector2.Distance (prevPosition, transform.position);
 			prevPosition = transform.position;
@@ -161,6 +179,7 @@ public class CharacterMovement : MonoBehaviour {
 		shadow = new GameObject ("Shadow");
 		shadow.transform.SetParent (transform, false);
 		shadow.transform.localPosition = new Vector2 (0f, -0.1f);
+		shadow.transform.rotation = spriteRenderer.transform.rotation;
 		SpriteRenderer shadowSpriteRenderer = shadow.AddComponent<SpriteRenderer> ();
 		shadowSpriteRenderer.sortingLayerName = "Shadow";
 		Color shadowColor = new Color (0f, 0f, 0f, 0.5f);
@@ -179,10 +198,9 @@ public class CharacterMovement : MonoBehaviour {
 		}
 	}
 
-	public virtual void SetDirectionTo(Vector2 destination) {
+	public virtual void SetDestinatioTo(Vector2 destination) {
 		this.destination = destination;
-	
-		direction = CalculateDirection (destination);
+		directionToSet = CalculateDirection (destination);
 	}
 
 	public void Stop() {
@@ -207,12 +225,13 @@ public class CharacterMovement : MonoBehaviour {
 			} else {
 				return 3;
 			}
-		}		
+		}	
+
 	}
 
 	bool IsAttackTargetInRange ()
 	{
-		Collider2D[] colliders = Physics2D.OverlapCircleAll (center.transform.position, attackRange);
+		Collider2D[] colliders = Physics2D.OverlapCircleAll (center.transform.position, GetAttackRange());
 		foreach (Collider2D collider2D in colliders) {
 			if (collider2D.gameObject == attackTarget) {
 				return true;
@@ -222,19 +241,20 @@ public class CharacterMovement : MonoBehaviour {
 		return false;
 	}
 
-	void StartNewAttack ()
+	protected virtual void StartNewAttack ()
 	{
 		totalAttackTimer = 0.0f;
+		preAttackDelayTimer = 0.0f;
 		destination = transform.position;
 		canMove = false;
 		isPreAttackDone = false;
 		onAttack = true;
 		canHitTarget = true;
 		direction = CalculateDirection (new Vector2 (attackTarget.transform.position.x, attackTarget.transform.position.y));
-		animator.speed = 1.0f / attackTime;
+		animator.speed = 1.0f / GetAttackTime();
 	}
 
-	public void AttackDone ()
+	public virtual void AttackDone ()
 	{
 		animator.speed = 1.0f;
 		isPreAttackDone = true;
@@ -242,12 +262,13 @@ public class CharacterMovement : MonoBehaviour {
 		canMove = true;
 	}
 
-	public void CancleAttack ()
+	public virtual void CancleAttack ()
 	{
 		attackTarget = null;
 		canAttack = false;
 		canMove = true;
 		animator.speed = 1.0f;
+		preAttackDelayTimer = 0f;
 		onAttack = false;
 
 		if (canHitTarget) {
@@ -273,36 +294,41 @@ public class CharacterMovement : MonoBehaviour {
 
 		HitObject instantiatedHitObject = Instantiate (hitObject).GetComponent<HitObject>();
 		instantiatedHitObject.transform.position = hitObjectSpawnPoint.transform.position;
-		instantiatedHitObject.damage = attackPower;
+		instantiatedHitObject.damage = GetAttackPower();
 		instantiatedHitObject.Hit (this, attackTarget.transform.Find ("Center").position, attackTarget.tag);
 	}
 
 	public virtual void Hit(float damage, CharacterMovement attacker) {
 		hp -= damage;
-		audioSource.PlayOneShot (hitSound);
-		uiCanvas.Hit (this, damage);
+		float alpha = spriteRenderer.color.a;
+		if (damage < 0f) {
+			if (hp > maxHp) {
+				hp = maxHp;
+			}
+			spriteRenderer.color = new Color (0.5f, 1, 0, alpha);
+		} else {
+			audioSource.PlayOneShot (hitSound);
+			spriteRenderer.color = new Color (1, 0.3f, 0.3f, alpha);
 
-		spriteRenderer.color = new Color (1, 0, 0);
-
-		if (hp <= 0) {
-			isActive = false;
-			velocity = 0;
-			onAttack = false;
-
-			animator.SetTrigger ("Dead");
-			audioSource.PlayOneShot (deadSound);
-			foreach (Collider2D collider2D in GetComponents<Collider2D> ()) {
-				Destroy(collider2D);
+			if (hp <= 0) {
+				StartDead ();
 			}
 		}
+
+		uiCanvas.Hit (this, damage);
 	}
 
 	protected virtual void HitRecover ()
 	{
 		Color spriteColor = spriteRenderer.color;
-		if (spriteColor.g < 1.0f || spriteColor.b < 1.0f) {
+		if (spriteColor.r < 1.0f || spriteColor.g < 1.0f || spriteColor.b < 1.0f) {
+			spriteColor.r += 0.1f;
 			spriteColor.g += 0.1F;
 			spriteColor.b += 0.1f;
+
+			if (spriteColor.r > 1.0f) {
+				spriteColor.r = 1.0f;
+			}
 
 			if (spriteColor.g > 1.0f) {
 				spriteColor.g = 1.0f;
@@ -313,6 +339,22 @@ public class CharacterMovement : MonoBehaviour {
 			}
 
 			spriteRenderer.color = spriteColor;
+		}
+	}
+
+	protected virtual void StartDead ()
+	{
+		hp = 0;
+		isAlive = false;
+		CancleAttack ();
+		canMove = false;
+
+		animator.SetTrigger ("Dead");
+		audioSource.PlayOneShot (deadSound);
+		if (isRemoveColliderWhenDead) {
+			foreach (Collider2D collider2D in GetComponents<Collider2D> ()) {
+				Destroy (collider2D);
+			}
 		}
 	}
 
@@ -344,5 +386,71 @@ public class CharacterMovement : MonoBehaviour {
 	{
 		direction = CalculateDirection (position);
 		animator.SetInteger ("Direction", direction);
+	}
+
+	public float GetAttackPower() {
+		return initialAttackPower;
+	}
+		
+	public virtual void AttackPowerUp (float powerUpAmount)
+	{
+		initialAttackPower += powerUpAmount;
+	}
+
+	public float GetAttackTime ()
+	{
+		return initialAttackTime;
+	}
+
+	public virtual void AttackTimeReduction(float reductionRate) {
+		initialAttackTime -= initialAttackTime * reductionRate;
+	}
+
+	public float GetAttackRange() {
+		return initialAttackRange;
+	}
+
+	public virtual void AttackRangeUp(float rangeUpAmount) {
+		initialAttackRange += rangeUpAmount;
+	}
+
+	public float GetSpeed() {
+		return initialSpeed;
+	}
+
+	public virtual void SpeedUp(float speedUpAmount) {
+		initialSpeed += speedUpAmount;
+	}
+
+	public float GetSkillCoolTimeReductionRate ()
+	{
+		return InitialSkillCoolTimeReductionRate;
+	}
+
+	public virtual void SkillCoomTimeReductionRateUp(float rate) {
+		InitialSkillCoolTimeReductionRate += rate;
+	}
+
+	public void UseSkill (string skillAnimationTrigger, float skillCastTime)
+	{
+		CancleAttack ();
+		// AttackDone ();
+		See (Camera.main.ScreenToWorldPoint (Input.mousePosition));
+		animator.SetTrigger (skillAnimationTrigger);
+		animator.speed = 1.0f / skillCastTime;
+	}
+
+	public void EndSkill ()
+	{
+		animator.speed = 1.0f;
+		canAttack = true;
+		canMove = true;
+	}
+
+	void ChangeDirectionToMovepoint ()
+	{
+		if (direction != directionToSet) {
+			direction = directionToSet;
+		}
 	}
 }

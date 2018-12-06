@@ -3,28 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Door : MonoBehaviour {
-	public Door linkedDoor;
-	Vector2 enterPoint;
+	public RoomManager.Direction direction;
 
-	bool isOpened;
+	public RoomManager linkedRoom;
+	public Vector2 enterPoint {
+		get {
+			return transform.Find ("EnterPoint").position;
+		}
+	}
 
-	BoxCollider2D doorCollider;
-	Animator animator;
+	[SerializeField] bool isOpened;
 
-	void Awake() {
-		doorCollider = GetComponent<BoxCollider2D> ();
+	protected Animator animator;
+	public RoomManager roomManager;
+	float recovertyTimer;
+
+	protected virtual void Awake() {
 		animator = GetComponent<Animator> ();
-		enterPoint = transform.Find ("EnterPoint").position;
 		isOpened = false;
 	}
 
-	void Start() {
-		animator.SetTrigger ("Close");
+	protected virtual void Update() {
+		animator.SetBool ("isOpened", isOpened);
 	}
 
-	public void Open ()
+	public virtual void Open ()
 	{
-		Destroy (doorCollider);
 		animator.SetTrigger ("Open");
 		isOpened = true;
 	}
@@ -33,18 +37,9 @@ public class Door : MonoBehaviour {
 		if (isOpened) {
 			if (other.tag == "Player") {
 				CharacterMovement playerMovement = other.GetComponent<CharacterMovement> ();
-				linkedDoor.Enter (playerMovement);
-				transform.parent.gameObject.SetActive (false);
+				linkedRoom.Enter (playerMovement, direction);
+				roomManager.Exit (this);
 			}
 		}
-	}
-
-	public void Enter (CharacterMovement charMovement)
-	{
-		transform.parent.gameObject.SetActive (true);
-		transform.parent.GetComponent<RoomManager> ().SpawnEnemies ();
-		charMovement.Stop ();
-		charMovement.transform.position = enterPoint;
-		Camera.main.transform.position = new Vector3(transform.parent.position.x, transform.parent.position.y, Camera.main.transform.position.z);
 	}
 }

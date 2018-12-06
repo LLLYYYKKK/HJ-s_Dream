@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour {
 	public Texture2D[] idleCursor;
 	public GameObject footprint;
 
-	CharacterMovement characterMovement;
+	PlayerMovement playerMovement;
 	GameObject attackRangeShower;
 	SkillManager skillManager;
 	Transform center;
@@ -20,11 +20,11 @@ public class PlayerController : MonoBehaviour {
 	public const int ATTACK_STATE = 2;
 
 	void Awake() {
-		characterMovement = GetComponent<CharacterMovement> ();
+		playerMovement = GetComponent<PlayerMovement> ();
 		skillManager = GetComponent<SkillManager> ();
 		center = transform.Find ("Center");
 		attackRangeShower = center.GetChild(0).gameObject;
-		characterMovement.canAttack = false;
+		playerMovement.canAttack = false;
 		controlState = IDLE_STATE;
 
 		cursorCount = 0;
@@ -34,74 +34,79 @@ public class PlayerController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		Debug.Log (controlState);
+		if (playerMovement.isAlive) {
+			attackRangeShower.SetActive (false);
 
-		attackRangeShower.SetActive (false);
-
-		if (Input.GetMouseButtonDown (1)) {
-			GameObject clickedEnemy = CheckEnemyClicked ();
-			if (clickedEnemy != null) {
-				AttackEnemy (clickedEnemy);
-			} else {
-				Move ();
-			}
-		}
-
-		if (Input.GetButtonDown("Stop")) {;
-			characterMovement.Stop ();
-			controlState = IDLE_STATE;
-		}
-
-		if (Input.GetButtonDown ("Attack")) {
-			controlState = WAIT_ATTACK_STATE;
-		}
-
-		if (Input.GetButtonDown("Skill1")) {
-			skillManager.UseSkill (0);
-			// controlState = ATTACK_STATE;
-		}
-
-		if (Input.GetButtonDown("Skill2")) {
-			skillManager.UseSkill (1);
-			// controlState = ATTACK_STATE;
-		}
-
-		if (Input.GetButtonDown("Skill3")) {
-			skillManager.UseSkill (2);
-			// controlState = ATTACK_STATE;
-		}
-
-		if (Input.GetButtonDown("Skill4")) {
-			skillManager.UseSkill (3);
-			// controlState = ATTACK_STATE;
-		}
-
-		switch (controlState) {
-		case IDLE_STATE:
-			characterMovement.canAttack = false;
-			characterMovement.attackTarget = null;
-			characterMovement.isAlwaysTracingTarget = false;
-			break;
-
-		case WAIT_ATTACK_STATE:
-			attackRangeShower.SetActive (true);
-			attackRangeShower.transform.localScale = new Vector3 (characterMovement.attackRange, characterMovement.attackRange);
-
-			if (Input.GetMouseButtonDown (0)) {
+			if (Input.GetMouseButtonDown (1)) {
+				skillManager.CancleWaitCastSkill ();
 				GameObject clickedEnemy = CheckEnemyClicked ();
-				AttackEnemy (clickedEnemy);
-				SetDestinationToMousePosition ();
-			}
-			break;
-		case ATTACK_STATE:
-			GameObject nearstEnemy = FindNearstEnemy ();
-			characterMovement.isAlwaysTracingTarget = true;
-
-			if (characterMovement.attackTarget == null) {
-				characterMovement.attackTarget = nearstEnemy;
+				if (clickedEnemy != null) {
+					AttackEnemy (clickedEnemy);
+				} else {
+					Move ();
+				}
 			}
 
-			break;
+			if (Input.GetButtonDown ("Stop")) {
+				;
+				playerMovement.Stop ();
+				controlState = IDLE_STATE;
+			}
+
+			if (Input.GetButtonDown ("Attack")) {
+				controlState = WAIT_ATTACK_STATE;
+			}
+
+			if (Input.GetButtonDown ("Skill1")) {
+				skillManager.TryUseSkill (0);
+				// controlState = ATTACK_STATE;
+			}
+
+			if (Input.GetButtonDown ("Skill2")) {
+				skillManager.TryUseSkill (1);
+				// controlState = ATTACK_STATE;
+			}
+
+			if (Input.GetButtonDown ("Skill3")) {
+				skillManager.TryUseSkill (2);
+				// controlState = ATTACK_STATE;
+			}
+
+			if (Input.GetButtonDown ("Skill4")) {
+				skillManager.TryUseSkill (3);
+				// controlState = ATTACK_STATE;
+			}
+
+			switch (controlState) {
+			case IDLE_STATE:
+				playerMovement.canAttack = false;
+				playerMovement.attackTarget = null;
+				playerMovement.isAlwaysTracingTarget = false;
+				break;
+
+			case WAIT_ATTACK_STATE:
+				attackRangeShower.SetActive (true);
+				attackRangeShower.transform.localScale = new Vector3 (playerMovement.GetAttackRange (), playerMovement.GetAttackRange ());
+
+				if (Input.GetMouseButtonDown (0)) {
+					skillManager.CancleWaitCastSkill ();
+					GameObject clickedEnemy = CheckEnemyClicked ();
+					AttackEnemy (clickedEnemy);
+					SetDestinationToMousePosition ();
+				}
+				break;
+			case ATTACK_STATE:
+				GameObject nearstEnemy = FindNearstEnemy ();
+				playerMovement.isAlwaysTracingTarget = true;
+
+				if (playerMovement.attackTarget == null) {
+					playerMovement.attackTarget = nearstEnemy;
+				}
+
+				break;
+			}
+		} else {
+			skillManager.CancleWaitCastSkill ();
 		}
 	}
 
@@ -109,13 +114,15 @@ public class PlayerController : MonoBehaviour {
 	{
 		controlState = IDLE_STATE;
 		SetDestinationToMousePosition ();
-		characterMovement.CancleAttack ();
+		if (!skillManager.IsInSkillCasting()) {
+			playerMovement.CancleAttack ();
+		}
 	}
 
 	void SetDestinationToMousePosition ()
 	{
 		Vector2 mousePosition = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-		characterMovement.SetDirectionTo(mousePosition);
+		playerMovement.SetDestinatioTo(mousePosition);
 
 		switch (controlState) {
 		case IDLE_STATE:
@@ -131,7 +138,9 @@ public class PlayerController : MonoBehaviour {
 
 		if (hit.collider != null) {
 			if (hit.collider.tag == "Enemy") {
-				return hit.collider.gameObject;
+				if (hit.collider.GetComponent<CharacterMovement> ().isAlive) {
+					return hit.collider.gameObject;
+				}
 			}
 		}
 
@@ -148,7 +157,7 @@ public class PlayerController : MonoBehaviour {
 		float distanceBetweenNearstEnemy = 0.0f;
 		foreach (Collider2D enemy in enemies) {
 			if (enemy.tag == "Enemy") {
-				if (enemy.GetComponent<CharacterMovement> ().isActive) {
+				if (enemy.GetComponent<CharacterMovement> ().isAlive) {
 					if (nearstEnemy == null) {
 						nearstEnemy = enemy;
 						distanceBetweenNearstEnemy = Vector2.Distance (transform.position, nearstEnemy.transform.position);
@@ -173,8 +182,10 @@ public class PlayerController : MonoBehaviour {
 	void AttackEnemy (GameObject clickedEnemy)
 	{
 		controlState = ATTACK_STATE;
-		characterMovement.canAttack = true;
-		characterMovement.attackTarget = clickedEnemy;
+		if (!skillManager.IsInSkillCasting ()) {
+			playerMovement.canAttack = true;
+		}
+		playerMovement.attackTarget = clickedEnemy;
 	}
 
 	IEnumerator ChangeCursor ()

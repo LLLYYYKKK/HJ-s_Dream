@@ -2,27 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FuckYouHitObject : HitObject {
-	protected override void Update ()
-	{
-		
-	}
-
-	protected override void FixedUpdate ()
-	{
-		
-	}
-
-	public override void Hit (CharacterMovement attacker, Vector2 destination, string attackTargetTag)
-	{
-		base.Hit (attacker, destination, attackTargetTag);
-		transform.rotation = Quaternion.identity;
-		Vector2 velocity = destination - new Vector2(transform.position.x, transform.position.y);
-		velocity = velocity.normalized * speed;
-		rbody2D.velocity = velocity;
-	}
-
-
+public class FuckYouHitObject : LinearMoveHitObject {
 	protected override void HitAction (CharacterMovement targetCharacterMovement)
 	{
 		StartCoroutine (MultipleHit (targetCharacterMovement));
@@ -33,8 +13,14 @@ public class FuckYouHitObject : HitObject {
 		OnTriggerEnter2D (other);
 	}
 
+	public override void Hit (CharacterMovement attacker, Vector2 destination, string attackTargetTag)
+	{
+		base.Hit (attacker, destination, attackTargetTag);
+		transform.rotation = Quaternion.identity;
+	}
+
 	IEnumerator MultipleHit(CharacterMovement target) {
-		if (target.isActive) {
+		if (target.isAlive) {
 			target.Hit (damage, attacker);
 			yield return new WaitForSeconds (0.1f);
 			attackTargetsBeHit.Remove (target.gameObject);
