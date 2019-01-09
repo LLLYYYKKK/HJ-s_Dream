@@ -1413,6 +1413,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: b20342cac85168a4db87def476956112, type: 3}
   - {fileID: 2800000, guid: 06985f80c29d7914f9bf7f8f13aaba82, type: 3}
   footprint: {fileID: 1788330035633708, guid: 3e0e1fee6ec2ad146abfcfb0c06c8454, type: 2}
+  controlState: 0
 --- !u!4 &928969609
 Transform:
   m_ObjectHideFlags: 0

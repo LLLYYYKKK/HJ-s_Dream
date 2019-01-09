@@ -31,7 +31,6 @@ public class ExplosionPlate : MonoBehaviour {
 		} else {
 			if (isExplosion) {
 				this.collider.isTrigger = true;
-				damagedCharacters.Clear ();
 				isExplosion = false;
 			}
 			transform.localScale -= new Vector3 (Time.deltaTime / remainTime * 0.2f, Time.deltaTime / remainTime * 0.2f, 0);
@@ -50,9 +49,8 @@ public class ExplosionPlate : MonoBehaviour {
 		if (timer < explosionTime) {
 			try {
 				CharacterMovement characterMovement = other.gameObject.GetComponent<CharacterMovement> ();
-				if (!damagedCharacters.Contains(characterMovement)) {
-					characterMovement.Hit(damage, creater);
-					damagedCharacters.Add(characterMovement);
+				if (characterMovement != null) {
+					StartCoroutine(Hit(characterMovement));
 				}
 			}
 			catch {
@@ -65,7 +63,9 @@ public class ExplosionPlate : MonoBehaviour {
 			try {
 				if (!other.isTrigger) {
 					CharacterMovement characterMovement = other.GetComponent<CharacterMovement>();
-					StartCoroutine(HitCharacterByPlate(characterMovement));
+					if (characterMovement != null) {
+						StartCoroutine(Hit(characterMovement));
+					}
 				}
 			}
 			catch{
@@ -77,7 +77,7 @@ public class ExplosionPlate : MonoBehaviour {
 		OnTriggerEnter2D (other);
 	}
 
-	IEnumerator HitCharacterByPlate (CharacterMovement characterMovement) {
+	IEnumerator Hit (CharacterMovement characterMovement) {
 		if (!damagedCharacters.Contains (characterMovement)) {
 			characterMovement.Hit (damage, creater);
 			damagedCharacters.Add (characterMovement);
